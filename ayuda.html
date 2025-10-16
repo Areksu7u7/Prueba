@@ -674,6 +674,7 @@
                 <li><a href="#interfaz">🖥️ Interfaz</a></li>
                 <li><a href="#modos">🔄 Modos</a></li>
                 <li><a href="#algoritmos">⚡ Algoritmos</a></li>
+                <li><a href="#asignacion">🔍 Asignación</a></li>
                 <li><a href="#northwest">🚚 NorthWest</a></li>
                 <li><a href="#ejemplos">📊 Ejemplos</a></li>
                 <li><a href="#videos">🎥 Videos</a></li>
@@ -693,7 +694,7 @@
                 <div class="feature-card stagger-item">
                     <div class="feature-icon">⚡</div>
                     <h3 class="feature-title">Algoritmos Especializados</h3>
-                    <p>Implementa algoritmos como Johnson, Húngaro y NorthWest con visualización paso a paso de cada iteración.</p>
+                    <p>Implementa algoritmos como Johnson, asignacion y NorthWest con visualización paso a paso de cada iteración.</p>
                 </div>
                 <div class="feature-card stagger-item">
                     <div class="feature-icon">🔄</div>
@@ -939,8 +940,249 @@
             </div>
         </section>
 
-        <!-- Secciones restantes (modos, algoritmos, northwest, ejemplos, videos) -->
-        <!-- Por razones de espacio, muestro solo una sección adicional como ejemplo -->
+        <!-- Sección de Algoritmos -->
+        <section id="algoritmos" class="section fade-in">
+            <h2 class="section-title">⚡ Algoritmos Implementados</h2>
+            
+            <div class="subsection">
+                <h3 class="subsection-title">Algoritmos Disponibles</h3>
+                <p>El software incluye implementaciones completas de algoritmos avanzados de teoría de grafos:</p>
+                
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🔍</div>
+                        <h3 class="feature-title">Algoritmo de Johnson</h3>
+                        <p>Encuentra los caminos más cortos entre todos los pares de nodos en grafos con pesos negativos.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🧮</div>
+                        <h3 class="feature-title">Algoritmo de Asignación</h3>
+                        <p>Resuelve problemas de asignación óptima en matrices de costos cuadradas.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🚚</div>
+                        <h3 class="feature-title">Algoritmo NorthWest</h3>
+                        <p>Proporciona una solución inicial para problemas de transporte y distribución.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Asignación (NUEVA) -->
+        <section id="asignacion" class="section fade-in">
+            <h2 class="section-title">🔍 Algoritmo de Asignación</h2>
+            
+            <div class="subsection">
+                <h3 class="subsection-title">Introducción al Problema de Asignación</h3>
+                <p>El problema de asignación consiste en asignar <strong>n</strong> tareas a <strong>n</strong> agentes de manera que se minimice el costo total o se maximice la eficiencia global.</p>
+                
+                <div class="algorithm-card">
+                    <div class="algorithm-header">
+                        <div class="algorithm-icon">🧮</div>
+                        <h3 class="algorithm-title">Algoritmo de asignacion</h3>
+                    </div>
+                    <div class="algorithm-content">
+                        <div class="algorithm-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Complejidad</div>
+                                <div class="detail-value">O(n³)</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Aplicaciones</div>
+                                <div class="detail-value">Asignación de tareas, emparejamiento óptimo, problemas de transporte</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Requisitos</div>
+                                <div class="detail-value">Matriz cuadrada de costos, valores no negativos</div>
+                            </div>
+                        </div>
+                        
+                        <h4>📋 Pasos del Algoritmo</h4>
+                        <ol class="step-list">
+                            <li><strong>Reducción de Filas:</strong> Restar el elemento mínimo de cada fila a todos los elementos de esa fila</li>
+                            <li><strong>Reducción de Columnas:</strong> Restar el elemento mínimo de cada columna a todos los elementos de esa columna</li>
+                            <li><strong>Cobertura de Ceros:</strong> Cubrir todos los ceros con el mínimo número de líneas</li>
+                            <li><strong>Verificación de Optimalidad:</strong> Si el número de líneas es igual a n, se ha encontrado la solución óptima</li>
+                            <li><strong>Ajuste de la Matriz:</strong> Si no es óptima, encontrar el mínimo valor no cubierto y ajustar la matriz</li>
+                            <li><strong>Repetición:</strong> Repetir los pasos 3-5 hasta encontrar la solución óptima</li>
+                        </ol>
+                        
+                        <div class="highlight">
+                            <h4>💡 Características Clave</h4>
+                            <ul class="step-list">
+                                <li>Garantiza encontrar la <strong>solución óptima</strong> para problemas de asignación</li>
+                                <li>Es especialmente eficiente para matrices de tamaño moderado</li>
+                                <li>Puede adaptarse para problemas de maximización convirtiendo la matriz de beneficios</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="subsection">
+                <h3 class="subsection-title">Ejemplo Práctico de Asignación</h3>
+                
+                <div class="example-container">
+                    <h4 class="example-title">🏢 Asignación de Proyectos a Equipos</h4>
+                    <p>Una empresa tiene 4 proyectos y 4 equipos disponibles. La matriz de costos muestra el costo estimado (en miles de dólares) de asignar cada proyecto a cada equipo:</p>
+                    
+                    <div class="matrix-example">
+                        <table class="matrix-table">
+                            <tr>
+                                <th></th>
+                                <th>Equipo A</th>
+                                <th>Equipo B</th>
+                                <th>Equipo C</th>
+                                <th>Equipo D</th>
+                            </tr>
+                            <tr>
+                                <th>Proyecto 1</th>
+                                <td>15</td>
+                                <td>12</td>
+                                <td>10</td>
+                                <td>18</td>
+                            </tr>
+                            <tr>
+                                <th>Proyecto 2</th>
+                                <td>14</td>
+                                <td>16</td>
+                                <td>13</td>
+                                <td>15</td>
+                            </tr>
+                            <tr>
+                                <th>Proyecto 3</th>
+                                <td>11</td>
+                                <td>9</td>
+                                <td>14</td>
+                                <td>12</td>
+                            </tr>
+                            <tr>
+                                <th>Proyecto 4</th>
+                                <td>13</td>
+                                <td>15</td>
+                                <td>12</td>
+                                <td>16</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="highlight">
+                        <h4>📈 Solución Óptima Encontrada</h4>
+                        <p>El algoritmo de asignación determina la asignación con menor costo total:</p>
+                        <ul class="step-list">
+                            <li><strong>Proyecto 1 → Equipo C</strong> (Costo: 10)</li>
+                            <li><strong>Proyecto 2 → Equipo A</strong> (Costo: 14)</li>
+                            <li><strong>Proyecto 3 → Equipo B</strong> (Costo: 9)</li>
+                            <li><strong>Proyecto 4 → Equipo D</strong> (Costo: 16)</li>
+                            <li><strong class="optimal-text">Costo Total Mínimo: 49 (miles de dólares)</strong></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="warning">
+                        <h4>⚠️ Consideraciones Importantes</h4>
+                        <ul class="step-list">
+                            <li>La matriz debe ser <strong>cuadrada</strong> (mismo número de filas y columnas)</li>
+                            <li>Para problemas no cuadrados, se deben agregar filas o columnas ficticias con costos cero</li>
+                            <li>El algoritmo funciona con valores <strong>no negativos</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="subsection">
+                <h3 class="subsection-title">Implementación en el Software</h3>
+                
+                <div class="interaction-demo">
+                    <div class="demo-item">
+                        <div class="demo-icon">📊</div>
+                        <div class="demo-text">
+                            <strong>Matriz de Costos</strong>
+                            <span>Ingresa o importa la matriz de costos directamente en la interfaz</span>
+                        </div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="demo-icon">⚡</div>
+                        <div class="demo-text">
+                            <strong>Ejecución Paso a Paso</strong>
+                            <span>Visualiza cada iteración del algoritmo con explicaciones detalladas</span>
+                        </div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="demo-icon">💾</div>
+                        <div class="demo-text">
+                            <strong>Exportar Resultados</strong>
+                            <span>Guarda la solución óptima y el proceso completo en formato PDF</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="example-container">
+                    <h4 class="example-title">🔄 Proceso de Ejecución</h4>
+                    <p>El software muestra visualmente cada paso del algoritmo de asignacion:</p>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h4 class="feature-title">Paso 1: Matriz Original</h4>
+                            <p>Visualización de la matriz de costos inicial con resaltado de mínimos por fila</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4 class="feature-title">Paso 2: Reducción de Filas</h4>
+                            <p>Se muestran las filas después de restar los valores mínimos</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4 class="feature-title">Paso 3: Reducción de Columnas</h4>
+                            <p>Visualización de la matriz después de la reducción por columnas</p>
+                        </div>
+                        <div class="feature-card">
+                            <h4 class="feature-title">Paso 4: Cobertura de Ceros</h4>
+                            <p>Se muestran las líneas que cubren todos los ceros de la matriz</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de NorthWest -->
+        <section id="northwest" class="section fade-in">
+            <h2 class="section-title">🚚 Algoritmo NorthWest</h2>
+            
+            <div class="subsection">
+                <h3 class="subsection-title">Introducción al Problema de Transporte</h3>
+                <p>El problema de transporte busca determinar el plan de distribución óptimo desde múltiples orígenes hacia múltiples destinos, minimizando el costo total.</p>
+                
+                <div class="algorithm-card">
+                    <div class="algorithm-header">
+                        <div class="algorithm-icon">🚚</div>
+                        <h3 class="algorithm-title">Algoritmo de la Esquina Noroeste (NorthWest)</h3>
+                    </div>
+                    <div class="algorithm-content">
+                        <div class="algorithm-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Complejidad</div>
+                                <div class="detail-value">O(m×n)</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Aplicaciones</div>
+                                <div class="detail-value">Logística, distribución, planificación de recursos</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Característica</div>
+                                <div class="detail-value">Proporciona solución inicial factible para métodos más avanzados</div>
+                            </div>
+                        </div>
+                        
+                        <h4>📋 Pasos del Algoritmo</h4>
+                        <ol class="step-list">
+                            <li><strong>Inicio en Esquina Noroeste:</strong> Comenzar en la celda superior izquierda de la matriz</li>
+                            <li><strong>Asignación Máxima:</strong> Asignar la máxima cantidad posible respetando oferta y demanda</li>
+                            <li><strong>Ajuste de Oferta/Demanda:</strong> Reducir la oferta y demanda según lo asignado</li>
+                            <li><strong>Movimiento:</strong> Moverse a la derecha si la oferta se agota, o hacia abajo si la demanda se satisface</li>
+                            <li><strong>Repetición:</strong> Repetir hasta satisfacer toda la oferta y demanda</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
         
         <section id="ejemplos" class="section fade-in">
             <h2 class="section-title">📊 Ejemplos Prácticos</h2>
@@ -1060,9 +1302,9 @@
                             <!-- Thumbnail placeholder -->
                         </div>
                         <div class="video-content">
-                            <h4 class="video-title">Método Húngaro - Problemas de Asignación</h4>
-                            <p class="video-description">Resolución paso a paso de problemas de asignación usando el método húngaro.</p>
-                            <a href="https://www.youtube.com/watch?v=example3" class="video-link" target="_blank">Ver Video</a>
+                            <h4 class="video-title">Algoritmo de Asignación</h4>
+                            <p class="video-description">Resolución paso a paso de problemas de asignación.</p>
+                            <a href="https://www.youtube.com/watch?v=JMe2E2FcLV0" class="video-link" target="_blank">Ver Video</a>
                         </div>
                     </div>
                     
