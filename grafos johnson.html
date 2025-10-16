@@ -30,6 +30,7 @@
                             <button class="dropdown-item" id="assignMinBtn">Minimizar</button>
                         </div>
                     </div>
+                    <button class="dropdown-item" id="northwestBtn">🚚 NorthWest (Transporte)</button>
                 </div>
             </div>
         </div>
@@ -496,6 +497,124 @@
             </div>
         </div>
     </div>
+
+    <!-- NorthWest Input Modal -->
+    <div class="help-modal" id="northwestInputModal" aria-modal="true" role="dialog">
+        <div class="help-content nw-input-modal-large">
+            <div class="help-header">
+                <div class="help-title">🚚 Algoritmo NorthWest - Entrada de Datos</div>
+                <button class="help-close" id="closeNorthwestInput">&times;</button>
+            </div>
+            <div class="help-body">
+                <!-- Sección de Importar/Exportar -->
+                <div class="nw-import-export-section">
+                    <h4>Importar/Exportar Ejercicio</h4>
+                    <div class="nw-import-export-buttons">
+                        <label for="nwImportFile" class="nw-import-btn">
+                            📂 Importar (JSON/CSV)
+                            <input type="file" id="nwImportFile" accept=".json,.csv" style="display: none;">
+                        </label>
+                        <button id="nwExportJSON" class="nw-export-btn">💾 Exportar JSON</button>
+                        <button id="nwExportCSV" class="nw-export-btn">📄 Exportar CSV</button>
+                    </div>
+                </div>
+
+                <!-- Tipo de Optimización -->
+                <div class="nw-optimization-selector">
+                    <label for="nwTipoOpt">Tipo de Optimización:</label>
+                    <select id="nwTipoOpt" class="nw-config-select">
+                        <option value="minimizar">Minimizar Costo</option>
+                        <option value="maximizar">Maximizar Beneficio</option>
+                    </select>
+                </div>
+
+                <!-- Tabla Dinámica -->
+                <div class="nw-dynamic-table-container">
+                    <div class="nw-table-wrapper">
+                        <table id="nwDynamicTable" class="nw-editable-table">
+                            <thead>
+                                <tr id="nwTableHeaderRow">
+                                    <th class="nw-corner-cell"></th>
+                                    <th class="nw-header-cell">Origen 1</th>
+                                    <th class="nw-header-cell">Origen 2</th>
+                                    <th class="nw-header-cell">Origen 3</th>
+                                    <th class="nw-header-cell">Origen 4</th>
+                                    <th class="nw-header-oferta">Oferta</th>
+                                </tr>
+                            </thead>
+                            <tbody id="nwTableBody">
+                                <tr>
+                                    <td class="nw-row-header">Destino 1</td>
+                                    <td><input type="number" class="nw-cell-input" value="5" step="1"></td>
+                                    <td><input type="number" class="nw-cell-input" value="5" step="1"></td>
+                                    <td><input type="number" class="nw-cell-input" value="8" step="1"></td>
+                                    <td><input type="number" class="nw-cell-input" value="9" step="1"></td>
+                                    <td><input type="number" class="nw-cell-oferta" value="7" step="1"></td>
+                                </tr>
+                                <tr>
+                                    <td class="nw-row-header">Destino 2</td>
+                                    <td><input type="number" class="nw-cell-input" value="8" step="1"></td>
+                                    <td><input type="number" class="nw-cell-input" value="5" step="1"></td>
+                                    <td><input type="number" class="nw-cell-input" value="4" step="1"></td>
+                                    <td><input type="number" class="nw-cell-input" value="10" step="1"></td>
+                                    <td><input type="number" class="nw-cell-oferta" value="5" step="1"></td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr id="nwTableFooterRow">
+                                    <td class="nw-footer-label">Demanda</td>
+                                    <td><input type="number" class="nw-cell-demanda" value="2" step="1"></td>
+                                    <td><input type="number" class="nw-cell-demanda" value="1" step="1"></td>
+                                    <td><input type="number" class="nw-cell-demanda" value="5" step="1"></td>
+                                    <td><input type="number" class="nw-cell-demanda" value="4" step="1"></td>
+                                    <td class="nw-corner-cell"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Botones de Control de Tabla -->
+                <div class="nw-table-controls">
+                    <button id="nwAddRow" class="nw-control-btn nw-add-btn">➕ Agregar Fila</button>
+                    <button id="nwAddColumn" class="nw-control-btn nw-add-btn">➕ Agregar Columna</button>
+                    <button id="nwRemoveRow" class="nw-control-btn nw-remove-btn">➖ Eliminar Fila</button>
+                    <button id="nwRemoveColumn" class="nw-control-btn nw-remove-btn">➖ Eliminar Columna</button>
+                    <button id="nwReset" class="nw-control-btn nw-reset-btn">🔄 Resetear</button>
+                    <button id="nwCalculate" class="nw-control-btn nw-calculate-btn">🚀 Calcular Solución</button>
+                </div>
+
+                <!-- Sección de Resultados (Oculta por defecto) -->
+                <div id="nwResultsSection" class="nw-results-section hidden">
+                    <div class="nw-results-divider"></div>
+                    <h3 class="nw-results-header">📊 Resultados del Algoritmo</h3>
+                    <div id="nwResultsContent" class="nw-results-content">
+                        <!-- Los resultados se insertarán aquí dinámicamente -->
+                    </div>
+                </div>
+            </div>
+            <div class="help-footer modal-actions">
+                <button id="northwestInputCancelBtn" class="help-footer-btn btn-cancel">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NorthWest Results Modal -->
+    <div class="help-modal" id="northwestModal" aria-modal="true" role="dialog">
+        <div class="help-content nw-results-modal">
+            <div class="help-header">
+                <div class="help-title">🚚 Algoritmo NorthWest - Resultados</div>
+                <button class="help-close" id="closeNorthwest">&times;</button>
+            </div>
+            <div class="help-body" id="northwestBody">
+                <!-- dynamic content injected by JS -->
+            </div>
+            <div class="help-footer modal-actions">
+                <button id="northwestCloseBtn" class="help-footer-btn">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js" defer></script>
     <script>
     // Modo Asignación: alternancia y visual

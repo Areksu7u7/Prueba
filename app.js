@@ -1299,3 +1299,1014 @@ document.getElementById('johnsonBtn')?.addEventListener('click', johnsonCritical
 // Activar botones de asignación máxima y mínima
 document.getElementById('assignMaxBtn')?.addEventListener('click', () => runAssignment('max'));
 document.getElementById('assignMinBtn')?.addEventListener('click', () => runAssignment('min'));
+
+/* ===== ALGORITMO NORTHWEST (TRANSPORTE) ===== */
+
+// Modal de NorthWest
+const northwestModal = document.getElementById('northwestModal');
+const closeNorthwest = document.getElementById('closeNorthwest');
+const northwestCloseBtn = document.getElementById('northwestCloseBtn');
+const northwestBody = document.getElementById('northwestBody');
+
+function openNorthwestModal() { if (northwestModal) northwestModal.style.display = 'block'; }
+function closeNorthwestModal() { if (northwestModal) northwestModal.style.display = 'none'; }
+closeNorthwest?.addEventListener('click', closeNorthwestModal);
+northwestCloseBtn?.addEventListener('click', closeNorthwestModal);
+
+// Botón para abrir el input modal
+document.getElementById('northwestBtn')?.addEventListener('click', openNorthwestInputModal);
+
+// Modal de entrada
+const northwestInputModal = document.getElementById('northwestInputModal');
+const closeNorthwestInput = document.getElementById('closeNorthwestInput');
+const northwestInputCancelBtn = document.getElementById('northwestInputCancelBtn');
+
+function openNorthwestInputModal() {
+    if (northwestInputModal) {
+        northwestInputModal.style.display = 'block';
+    }
+}
+function closeNorthwestInputModal() { if (northwestInputModal) northwestInputModal.style.display = 'none'; }
+closeNorthwestInput?.addEventListener('click', closeNorthwestInputModal);
+northwestInputCancelBtn?.addEventListener('click', closeNorthwestInputModal);
+
+// ===== FUNCIONES PARA TABLA DINÁMICA =====
+
+function getTableDimensions() {
+    const tbody = document.getElementById('nwTableBody');
+    const rows = tbody.querySelectorAll('tr');
+    const numDestinos = rows.length;
+    const numOrigenes = rows[0]?.querySelectorAll('.nw-cell-input').length || 0;
+    return { numOrigenes, numDestinos };
+}
+
+function updateTableHeaders() {
+    const { numOrigenes, numDestinos } = getTableDimensions();
+    const headerRow = document.getElementById('nwTableHeaderRow');
+
+    // Limpiar y reconstruir headers
+    headerRow.innerHTML = '<th class="nw-corner-cell"></th>';
+    for (let i = 0; i < numOrigenes; i++) {
+        headerRow.innerHTML += `<th class="nw-header-cell">Origen ${i + 1}</th>`;
+    }
+    headerRow.innerHTML += '<th class="nw-header-oferta">Oferta</th>';
+
+    // Actualizar labels de filas
+    const tbody = document.getElementById('nwTableBody');
+    const rows = tbody.querySelectorAll('tr');
+    rows.forEach((row, idx) => {
+        const header = row.querySelector('.nw-row-header');
+        if (header) header.textContent = `Destino ${idx + 1}`;
+    });
+}
+
+function addRow() {
+    const tbody = document.getElementById('nwTableBody');
+    const { numOrigenes, numDestinos } = getTableDimensions();
+
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `<td class="nw-row-header">Destino ${numDestinos + 1}</td>`;
+
+    for (let i = 0; i < numOrigenes; i++) {
+        newRow.innerHTML += `<td><input type="number" class="nw-cell-input" value="0" step="0.1"></td>`;
+    }
+    newRow.innerHTML += `<td><input type="number" class="nw-cell-oferta" value="0" step="0.1"></td>`;
+
+    tbody.appendChild(newRow);
+    updateDemandaRow();
+}
+
+function addColumn() {
+    const { numOrigenes, numDestinos } = getTableDimensions();
+    const tbody = document.getElementById('nwTableBody');
+    const rows = tbody.querySelectorAll('tr');
+
+    // Agregar celda a cada fila
+    rows.forEach(row => {
+        const ofertaCell = row.querySelector('.nw-cell-oferta').parentElement;
+        const newCell = document.createElement('td');
+        newCell.innerHTML = '<input type="number" class="nw-cell-input" value="0" step="0.1">';
+        row.insertBefore(newCell, ofertaCell);
+    });
+
+    updateTableHeaders();
+    updateDemandaRow();
+}
+
+function removeRow() {
+    const tbody = document.getElementById('nwTableBody');
+    const rows = tbody.querySelectorAll('tr');
+
+    if (rows.length <= 1) {
+        alert('Debe haber al menos 1 destino');
+        return;
+    }
+
+    tbody.removeChild(rows[rows.length - 1]);
+    updateDemandaRow();
+}
+
+function removeColumn() {
+    const { numOrigenes } = getTableDimensions();
+
+    if (numOrigenes <= 1) {
+        alert('Debe haber al menos 1 origen');
+        return;
+    }
+
+    const tbody = document.getElementById('nwTableBody');
+    const rows = tbody.querySelectorAll('tr');
+
+    rows.forEach(row => {
+        const inputs = row.querySelectorAll('.nw-cell-input');
+        if (inputs.length > 0) {
+            inputs[inputs.length - 1].parentElement.remove();
+        }
+    });
+
+    updateTableHeaders();
+    updateDemandaRow();
+}
+
+function updateDemandaRow() {
+    const { numOrigenes } = getTableDimensions();
+    const footerRow = document.getElementById('nwTableFooterRow');
+
+    footerRow.innerHTML = '<td class="nw-footer-label">Demanda</td>';
+    for (let i = 0; i < numOrigenes; i++) {
+        footerRow.innerHTML += `<td><input type="number" class="nw-cell-demanda" value="0" step="1"></td>`;
+    }
+    footerRow.innerHTML += '<td class="nw-corner-cell"></td>';
+}
+
+function resetTable() {
+    if (!confirm('¿Estás seguro de que quieres resetear toda la tabla?')) return;
+
+    const tbody = document.getElementById('nwTableBody');
+    tbody.innerHTML = `
+        <tr>
+            <td class="nw-row-header">Destino 1</td>
+            <td><input type="number" class="nw-cell-input" value="0" step="1"></td>
+            <td><input type="number" class="nw-cell-input" value="0" step="1"></td>
+            <td><input type="number" class="nw-cell-oferta" value="0" step="1"></td>
+        </tr>
+        <tr>
+            <td class="nw-row-header">Destino 2</td>
+            <td><input type="number" class="nw-cell-input" value="0" step="1"></td>
+            <td><input type="number" class="nw-cell-input" value="0" step="1"></td>
+            <td><input type="number" class="nw-cell-oferta" value="0" step="1"></td>
+        </tr>
+    `;
+
+    updateTableHeaders();
+    updateDemandaRow();
+}
+
+function readTableData() {
+    const tbody = document.getElementById('nwTableBody');
+    const rows = tbody.querySelectorAll('tr');
+    const { numOrigenes, numDestinos } = getTableDimensions();
+
+    // Leer matriz de costos
+    const matrizCostos = [];
+    rows.forEach((row, i) => {
+        matrizCostos[i] = [];
+        const inputs = row.querySelectorAll('.nw-cell-input');
+        inputs.forEach((input, j) => {
+            matrizCostos[i][j] = parseFloat(input.value) || 0;
+        });
+    });
+
+    // Leer oferta (última columna de cada fila)
+    const oferta = [];
+    rows.forEach((row, i) => {
+        const ofertaInput = row.querySelector('.nw-cell-oferta');
+        oferta[i] = parseFloat(ofertaInput.value) || 0;
+    });
+
+    // Leer demanda (fila del footer)
+    const demanda = [];
+    const demandaInputs = document.querySelectorAll('.nw-cell-demanda');
+    demandaInputs.forEach((input, j) => {
+        demanda[j] = parseFloat(input.value) || 0;
+    });
+
+    return { matrizCostos, oferta, demanda, numOrigenes, numDestinos };
+}
+
+function executeNorthwest() {
+    const tipoOpt = document.getElementById('nwTipoOpt').value;
+    const { matrizCostos, oferta, demanda } = readTableData();
+
+    // Validar
+    if (oferta.some(x => x < 0) || demanda.some(x => x < 0)) {
+        alert('Error: Oferta y demanda deben ser valores no negativos');
+        return;
+    }
+
+    const totalOferta = oferta.reduce((a, b) => a + b, 0);
+    const totalDemanda = demanda.reduce((a, b) => a + b, 0);
+
+    if (totalOferta === 0 || totalDemanda === 0) {
+        alert('Error: La oferta y demanda totales no pueden ser cero');
+        return;
+    }
+
+    // Ejecutar algoritmo
+    try {
+        const resultado = northwestAlgorithm(tipoOpt, matrizCostos, oferta, demanda);
+        displayNorthwestResultInline(resultado);
+
+        // Scroll automático hacia los resultados
+        setTimeout(() => {
+            const resultsSection = document.getElementById('nwResultsSection');
+            if (resultsSection) {
+                resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }, 100);
+    } catch (error) {
+        alert('Error al ejecutar el algoritmo: ' + error.message);
+        console.error(error);
+    }
+}
+
+// ===== IMPORTAR/EXPORTAR =====
+
+function exportToJSON() {
+    const tipoOpt = document.getElementById('nwTipoOpt').value;
+    const { matrizCostos, oferta, demanda } = readTableData();
+
+    const data = {
+        tipo: 'northwest',
+        tipoOptimizacion: tipoOpt,
+        matrizCostos: matrizCostos,
+        oferta: oferta,
+        demanda: demanda,
+        fecha: new Date().toISOString()
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `northwest_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function exportToCSV() {
+    const { matrizCostos, oferta, demanda, numOrigenes, numDestinos } = readTableData();
+
+    let csv = 'Tipo,Valores\n';
+    csv += 'Matriz de Costos\n';
+    csv += ',' + Array.from({ length: numOrigenes }, (_, i) => `Origen ${i + 1}`).join(',') + '\n';
+
+    matrizCostos.forEach((row, i) => {
+        csv += `Destino ${i + 1},` + row.join(',') + '\n';
+    });
+
+    csv += '\nOferta\n';
+    oferta.forEach((val, i) => {
+        csv += `Destino ${i + 1},${val}\n`;
+    });
+
+    csv += '\nDemanda\n';
+    demanda.forEach((val, i) => {
+        csv += `Origen ${i + 1},${val}\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `northwest_${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function importFromFile(file) {
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        try {
+            const content = e.target.result;
+
+            if (file.name.endsWith('.json')) {
+                const data = JSON.parse(content);
+                loadDataToTable(data);
+            } else if (file.name.endsWith('.csv')) {
+                alert('Importación CSV en desarrollo. Por favor usa JSON por ahora.');
+            }
+        } catch (error) {
+            alert('Error al importar archivo: ' + error.message);
+            console.error(error);
+        }
+    };
+
+    reader.readAsText(file);
+}
+
+function loadDataToTable(data) {
+    if (data.tipo !== 'northwest') {
+        alert('Archivo JSON no válido para NorthWest');
+        return;
+    }
+
+    const { matrizCostos, oferta, demanda, tipoOptimizacion } = data;
+    const numDestinos = matrizCostos.length;
+    const numOrigenes = matrizCostos[0].length;
+
+    // Configurar tipo de optimización
+    document.getElementById('nwTipoOpt').value = tipoOptimizacion || 'minimizar';
+
+    // Reconstruir tabla
+    const tbody = document.getElementById('nwTableBody');
+    tbody.innerHTML = '';
+
+    for (let i = 0; i < numDestinos; i++) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td class="nw-row-header">Destino ${i + 1}</td>`;
+
+        for (let j = 0; j < numOrigenes; j++) {
+            row.innerHTML += `<td><input type="number" class="nw-cell-input" value="${matrizCostos[i][j]}" step="1"></td>`;
+        }
+
+        row.innerHTML += `<td><input type="number" class="nw-cell-oferta" value="${oferta[i]}" step="1"></td>`;
+        tbody.appendChild(row);
+    }
+
+    updateTableHeaders();
+    updateDemandaRow();
+
+    // Cargar demanda
+    const demandaInputs = document.querySelectorAll('.nw-cell-demanda');
+    demandaInputs.forEach((input, j) => {
+        input.value = demanda[j];
+    });
+
+    alert('Datos importados correctamente');
+}
+
+// Event Listeners
+document.getElementById('nwAddRow')?.addEventListener('click', addRow);
+document.getElementById('nwAddColumn')?.addEventListener('click', addColumn);
+document.getElementById('nwRemoveRow')?.addEventListener('click', removeRow);
+document.getElementById('nwRemoveColumn')?.addEventListener('click', removeColumn);
+document.getElementById('nwReset')?.addEventListener('click', resetTable);
+document.getElementById('nwCalculate')?.addEventListener('click', executeNorthwest);
+document.getElementById('nwExportJSON')?.addEventListener('click', exportToJSON);
+document.getElementById('nwExportCSV')?.addEventListener('click', exportToCSV);
+
+document.getElementById('nwImportFile')?.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        importFromFile(file);
+        e.target.value = ''; // Reset input
+    }
+});
+
+function northwestAlgorithm(tipoOptimizacion, matrizCostos, ofertaOriginal, demandaOriginal) {
+    // Copiar para no modificar originales
+    let oferta = [...ofertaOriginal];
+    let demanda = [...demandaOriginal];
+    let costos = matrizCostos.map(row => [...row]);
+
+    const m = oferta.length;
+    const n = demanda.length;
+
+    const totalOferta = oferta.reduce((a, b) => a + b, 0);
+    const totalDemanda = demanda.reduce((a, b) => a + b, 0);
+
+    let nodeFicticio = { tipo: null, cantidad: 0 };
+
+    // Balancear oferta y demanda
+    if (Math.abs(totalOferta - totalDemanda) > 1e-9) {
+        if (totalOferta > totalDemanda) {
+            // Agregar destino ficticio
+            nodeFicticio = { tipo: 'destino', cantidad: totalOferta - totalDemanda };
+            demanda.push(totalOferta - totalDemanda);
+            costos.forEach(row => row.push(0));
+        } else {
+            // Agregar origen ficticio
+            nodeFicticio = { tipo: 'origen', cantidad: totalDemanda - totalOferta };
+            oferta.push(totalDemanda - totalOferta);
+            costos.push(new Array(n).fill(0));
+        }
+    }
+
+    const mFinal = oferta.length;
+    const nFinal = demanda.length;
+
+    // FASE 1: ESQUINA NOROESTE
+    const asignacionInicial = esquinaNoreste(oferta, demanda);
+    let asignacion = asignacionInicial.map(row => [...row]);
+
+    const iteraciones = [];
+    const maxIteraciones = 1000;
+    let iteracion = 0;
+
+    // Guardar iteración inicial
+    iteraciones.push({
+        numero: 0,
+        asignacion: asignacion.map(row => [...row]),
+        multiplicadores: null,
+        costosReducidos: null,
+        costTotal: calcularCostoTotal(asignacion, costos),
+        esOptimo: false,
+        fase: 'Esquina Noroeste (Solución Inicial)'
+    });
+
+    // FASE 2: MÉTODO MODI
+    while (iteracion < maxIteraciones) {
+        iteracion++;
+
+        // Verificar degeneración
+        const numBasicas = contarBasicas(asignacion);
+        if (numBasicas < mFinal + nFinal - 1) {
+            manejarDegeneracion(asignacion, costos, mFinal, nFinal);
+        }
+
+        // Calcular multiplicadores
+        const { ui, vj } = calcularMultiplicadores(asignacion, costos, mFinal, nFinal);
+
+        // Calcular costos reducidos
+        const costosReducidos = calcularCostosReducidos(asignacion, costos, ui, vj, mFinal, nFinal);
+
+        const costTotal = calcularCostoTotal(asignacion, costos);
+
+        // Verificar optimalidad
+        const esOptimo = verificarOptimalidad(costosReducidos, asignacion, tipoOptimizacion);
+
+        iteraciones.push({
+            numero: iteracion,
+            asignacion: asignacion.map(row => [...row]),
+            multiplicadores: { ui: [...ui], vj: [...vj] },
+            costosReducidos: costosReducidos.map(row => [...row]),
+            costTotal: costTotal,
+            esOptimo: esOptimo,
+            fase: 'MODI - Optimización'
+        });
+
+        if (esOptimo) break;
+
+        // Encontrar celda de entrada
+        const celdaEntrada = encontrarCeldaEntrada(costosReducidos, asignacion, tipoOptimizacion);
+
+        if (!celdaEntrada) {
+            console.warn('No se pudo encontrar celda de entrada');
+            break;
+        }
+
+        console.log(`Iteración ${iteracion}: Celda de entrada [${celdaEntrada.i}][${celdaEntrada.j}]`);
+
+        // Crear loop
+        const loop = crearLoop(asignacion, celdaEntrada, mFinal, nFinal);
+
+        if (!loop || loop.length === 0) {
+            console.warn('No se pudo crear loop válido');
+            console.log('Asignación actual:', asignacion);
+            console.log('Celda entrada:', celdaEntrada);
+            break;
+        }
+
+        console.log('Loop encontrado:', loop);
+
+        // Calcular theta
+        const theta = calcularTheta(asignacion, loop);
+
+        if (theta <= 0) {
+            console.warn('Theta inválido:', theta);
+            console.log('Loop:', loop);
+            console.log('Asignación:', asignacion);
+            break;
+        }
+
+        console.log(`Theta calculado: ${theta}`);
+
+        // Aplicar transferencia
+        asignacion = aplicarTransferencia(asignacion, loop, theta);
+        console.log('Nueva asignación después de transferencia:', asignacion);
+    }
+
+    const costoFinal = calcularCostoTotal(asignacion, costos);
+    const esOptimo = iteracion < maxIteraciones;
+
+    return {
+        costoOptimo: costoFinal,
+        asignacionOptima: asignacion,
+        iteraciones: iteraciones,
+        solucionOptimal: esOptimo,
+        nodeFicticioAgregado: nodeFicticio,
+        dimensiones: { m: mFinal, n: nFinal },
+        matrizCostos: costos,
+        tipoOptimizacion: tipoOptimizacion
+    };
+}
+
+function esquinaNoreste(ofertaOriginal, demandaOriginal) {
+    const oferta = [...ofertaOriginal];
+    const demanda = [...demandaOriginal];
+    const m = oferta.length;
+    const n = demanda.length;
+    const asignacion = Array.from({ length: m }, () => new Array(n).fill(0));
+
+    let i = 0, j = 0;
+
+    while (i < m && j < n) {
+        const cantidad = Math.min(oferta[i], demanda[j]);
+        asignacion[i][j] = cantidad;
+        oferta[i] -= cantidad;
+        demanda[j] -= cantidad;
+
+        if (oferta[i] === 0 && i < m - 1) {
+            i++;
+        } else if (demanda[j] === 0 && j < n - 1) {
+            j++;
+        } else {
+            break;
+        }
+    }
+
+    return asignacion;
+}
+
+function calcularCostoTotal(asignacion, costos) {
+    let total = 0;
+    for (let i = 0; i < asignacion.length; i++) {
+        for (let j = 0; j < asignacion[i].length; j++) {
+            total += asignacion[i][j] * costos[i][j];
+        }
+    }
+    return total;
+}
+
+function contarBasicas(asignacion) {
+    let count = 0;
+    for (let i = 0; i < asignacion.length; i++) {
+        for (let j = 0; j < asignacion[i].length; j++) {
+            if (asignacion[i][j] > 0) count++;
+        }
+    }
+    return count;
+}
+
+function manejarDegeneracion(asignacion, costos, m, n) {
+    // Agregar epsilon (0) a una celda no básica estratégicamente
+    for (let i = 0; i < m; i++) {
+        for (let j = 0; j < n; j++) {
+            if (asignacion[i][j] === 0) {
+                asignacion[i][j] = 1e-10; // Epsilon muy pequeño
+                return;
+            }
+        }
+    }
+}
+
+function calcularMultiplicadores(asignacion, costos, m, n) {
+    const ui = new Array(m).fill(undefined);
+    const vj = new Array(n).fill(undefined);
+
+    ui[0] = 0; // Inicializar U[0] = 0
+
+    let cambios = true;
+    let intentos = 0;
+
+    while (cambios && intentos < 100) {
+        cambios = false;
+        intentos++;
+
+        for (let i = 0; i < m; i++) {
+            for (let j = 0; j < n; j++) {
+                if (asignacion[i][j] > 0) {
+                    // Celda básica: costo[i][j] = ui[i] + vj[j]
+                    if (ui[i] !== undefined && vj[j] === undefined) {
+                        vj[j] = costos[i][j] - ui[i];
+                        cambios = true;
+                    } else if (vj[j] !== undefined && ui[i] === undefined) {
+                        ui[i] = costos[i][j] - vj[j];
+                        cambios = true;
+                    }
+                }
+            }
+        }
+    }
+
+    // Rellenar faltantes con 0
+    for (let i = 0; i < m; i++) if (ui[i] === undefined) ui[i] = 0;
+    for (let j = 0; j < n; j++) if (vj[j] === undefined) vj[j] = 0;
+
+    return { ui, vj };
+}
+
+function calcularCostosReducidos(asignacion, costos, ui, vj, m, n) {
+    const costosReducidos = Array.from({ length: m }, () => new Array(n).fill(0));
+
+    for (let i = 0; i < m; i++) {
+        for (let j = 0; j < n; j++) {
+            if (asignacion[i][j] === 0 || asignacion[i][j] < 1e-9) {
+                costosReducidos[i][j] = costos[i][j] - (ui[i] + vj[j]);
+            } else {
+                costosReducidos[i][j] = 0; // Celdas básicas no se evalúan
+            }
+        }
+    }
+
+    return costosReducidos;
+}
+
+function verificarOptimalidad(costosReducidos, asignacion, tipoOptimizacion) {
+    for (let i = 0; i < costosReducidos.length; i++) {
+        for (let j = 0; j < costosReducidos[i].length; j++) {
+            if (asignacion[i][j] === 0 || asignacion[i][j] < 1e-9) {
+                if (tipoOptimizacion === 'minimizar' && costosReducidos[i][j] < -1e-9) {
+                    return false;
+                }
+                if (tipoOptimizacion === 'maximizar' && costosReducidos[i][j] > 1e-9) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+function encontrarCeldaEntrada(costosReducidos, asignacion, tipoOptimizacion) {
+    let mejorValor = tipoOptimizacion === 'minimizar' ? Infinity : -Infinity;
+    let mejorCelda = null;
+
+    for (let i = 0; i < costosReducidos.length; i++) {
+        for (let j = 0; j < costosReducidos[i].length; j++) {
+            if (asignacion[i][j] === 0 || asignacion[i][j] < 1e-9) {
+                if (tipoOptimizacion === 'minimizar' && costosReducidos[i][j] < mejorValor) {
+                    mejorValor = costosReducidos[i][j];
+                    mejorCelda = { i, j };
+                } else if (tipoOptimizacion === 'maximizar' && costosReducidos[i][j] > mejorValor) {
+                    mejorValor = costosReducidos[i][j];
+                    mejorCelda = { i, j };
+                }
+            }
+        }
+    }
+
+    return mejorCelda;
+}
+
+function crearLoop(asignacion, celdaEntrada, m, n) {
+    const { i: startI, j: startJ } = celdaEntrada;
+
+    // Método BFS mejorado para encontrar loop
+    function buscarLoopBFS() {
+        const queue = [];
+        queue.push({
+            i: startI,
+            j: startJ,
+            path: [{ i: startI, j: startJ, signo: 1 }],
+            direction: 'row',
+            visited: new Set([`${startI},${startJ},start`])
+        });
+
+        while (queue.length > 0) {
+            const { i, j, path, direction, visited } = queue.shift();
+
+            if (direction === 'row') {
+                // Buscar en la misma fila por celdas básicas
+                for (let jj = 0; jj < n; jj++) {
+                    if (jj !== j && asignacion[i][jj] > 1e-9) {
+                        const key = `${i},${jj},row`;
+                        if (visited.has(key)) continue;
+
+                        const newPath = [...path, { i: i, j: jj, signo: path.length % 2 === 1 ? -1 : 1 }];
+
+                        // Verificar si cerramos el loop (volvemos a la columna inicial)
+                        if (jj === startJ && newPath.length >= 4) {
+                            // Verificar que podemos cerrar desde esta fila
+                            if (asignacion[i][startJ] > 1e-9 && i !== startI) {
+                                return newPath;
+                            }
+                        }
+
+                        const newVisited = new Set(visited);
+                        newVisited.add(key);
+                        queue.push({ i: i, j: jj, path: newPath, direction: 'col', visited: newVisited });
+                    }
+                }
+            } else {
+                // Buscar en la misma columna por celdas básicas
+                for (let ii = 0; ii < m; ii++) {
+                    if (ii !== i && asignacion[ii][j] > 1e-9) {
+                        const key = `${ii},${j},col`;
+                        if (visited.has(key)) continue;
+
+                        const newPath = [...path, { i: ii, j: j, signo: path.length % 2 === 1 ? -1 : 1 }];
+
+                        // Verificar si cerramos el loop (volvemos a la fila inicial)
+                        if (ii === startI && newPath.length >= 4) {
+                            // Verificar que podemos cerrar desde esta columna
+                            if (asignacion[startI][j] > 1e-9) {
+                                return newPath;
+                            }
+                        }
+
+                        const newVisited = new Set(visited);
+                        newVisited.add(key);
+                        queue.push({ i: ii, j: j, path: newPath, direction: 'row', visited: newVisited });
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    const loop = buscarLoopBFS();
+
+    if (!loop) {
+        console.warn('BFS no encontró loop, intentando método simple');
+        return crearLoopSimple(asignacion, celdaEntrada, m, n);
+    }
+
+    return loop;
+}
+
+// Fallback simple para búsqueda de loop
+function crearLoopSimple(asignacion, celdaEntrada, m, n) {
+    const { i: ii, j: jj } = celdaEntrada;
+
+    // Buscar loop rectangular simple
+    for (let j = 0; j < n; j++) {
+        if (j !== jj && asignacion[ii][j] > 1e-9) {
+            // Encontramos celda básica en la misma fila
+            for (let i = 0; i < m; i++) {
+                if (i !== ii && asignacion[i][j] > 1e-9 && asignacion[i][jj] > 1e-9) {
+                    // Encontramos celda básica que cierra el loop
+                    return [
+                        { i: ii, j: jj, signo: 1 },   // Celda de entrada (+)
+                        { i: ii, j: j, signo: -1 },    // Misma fila (-)
+                        { i: i, j: j, signo: 1 },      // Misma columna (+)
+                        { i: i, j: jj, signo: -1 }     // Cierre (-)
+                    ];
+                }
+            }
+        }
+    }
+
+    console.error('No se encontró loop válido para celda:', celdaEntrada);
+    console.log('Asignación actual:', asignacion);
+    return null;
+}
+
+function calcularTheta(asignacion, loop) {
+    if (!loop || loop.length === 0) {
+        console.error('Loop vacío en calcularTheta');
+        return 0;
+    }
+    
+    let theta = Infinity;
+
+    for (const celda of loop) {
+        if (celda.signo === -1) {
+            const valor = asignacion[celda.i][celda.j];
+            // Debe ser una celda básica (valor > 0)
+            if (valor > 1e-9) {
+                theta = Math.min(theta, valor);
+            } else {
+                // ERROR: Celda en loop no es básica
+                console.error(`Celda no-básica en loop: [${celda.i}][${celda.j}] = ${valor}`);
+                return 0;
+            }
+        }
+    }
+
+    if (theta === Infinity || theta <= 0) {
+        console.error('Theta inválido calculado:', theta);
+        return 0;
+    }
+
+    return theta;
+}
+
+function aplicarTransferencia(asignacion, loop, theta) {
+    const nuevaAsignacion = asignacion.map(row => [...row]);
+
+    for (const celda of loop) {
+        if (celda.signo === 1) {
+            nuevaAsignacion[celda.i][celda.j] += theta;
+        } else {
+            nuevaAsignacion[celda.i][celda.j] -= theta;
+            if (nuevaAsignacion[celda.i][celda.j] < 1e-9) {
+                nuevaAsignacion[celda.i][celda.j] = 0;
+            }
+        }
+    }
+
+    return nuevaAsignacion;
+}
+
+function displayNorthwestResult(resultado) {
+    let html = '<div class="nw-result-container">';
+
+    // Header con resultado
+    html += `<div class="nw-result-header">`;
+    html += `<h3>Resultado del Algoritmo NorthWest</h3>`;
+    html += `<div class="nw-result-summary">`;
+    html += `<div class="nw-summary-item"><strong>Tipo:</strong> ${resultado.tipoOptimizacion.toUpperCase()}</div>`;
+    html += `<div class="nw-summary-item nw-highlight"><strong>Costo Óptimo:</strong> ${resultado.costoOptimo.toFixed(2)}</div>`;
+    html += `<div class="nw-summary-item"><strong>Iteraciones:</strong> ${resultado.iteraciones.length}</div>`;
+    html += `<div class="nw-summary-item"><strong>Estado:</strong> ${resultado.solucionOptimal ? '✅ Óptimo' : '⚠️ No convergió'}</div>`;
+    html += `</div>`;
+
+    if (resultado.nodeFicticioAgregado.tipo) {
+        html += `<div class="nw-warning">`;
+        html += `⚠️ Se agregó un <strong>${resultado.nodeFicticioAgregado.tipo} ficticio</strong> con cantidad ${resultado.nodeFicticioAgregado.cantidad.toFixed(2)} para balancear oferta y demanda.`;
+        html += `</div>`;
+    }
+    html += `</div>`;
+
+    // Tabs para iteraciones
+    html += `<div class="nw-iterations-tabs">`;
+    resultado.iteraciones.forEach((iter, idx) => {
+        html += `<button class="nw-tab-btn ${idx === resultado.iteraciones.length - 1 ? 'active' : ''}" data-iteration="${idx}">`;
+        html += iter.numero === 0 ? 'Inicial' : `Iter ${iter.numero}`;
+        html += `</button>`;
+    });
+    html += `</div>`;
+
+    // Contenido de iteraciones
+    html += `<div class="nw-iterations-content">`;
+    resultado.iteraciones.forEach((iter, idx) => {
+        html += `<div class="nw-iteration-panel ${idx === resultado.iteraciones.length - 1 ? 'active' : ''}" data-iteration="${idx}">`;
+        html += `<h4>${iter.fase} ${iter.numero > 0 ? `- Iteración ${iter.numero}` : ''}</h4>`;
+        html += `<div class="nw-cost-display">Costo Total: <span class="nw-cost-value">${iter.costTotal.toFixed(2)}</span></div>`;
+
+        // Matriz de asignación
+        html += `<div class="nw-matrix-section">`;
+        html += `<h5>Matriz de Asignación</h5>`;
+        html += generarTablaMatriz(iter.asignacion, 'asignacion', resultado);
+        html += `</div>`;
+
+        // Multiplicadores (si existen)
+        if (iter.multiplicadores) {
+            html += `<div class="nw-matrix-section">`;
+            html += `<h5>Multiplicadores</h5>`;
+            html += `<div class="nw-multipliers">`;
+            html += `<div><strong>Ui:</strong> [${iter.multiplicadores.ui.map(v => v.toFixed(2)).join(', ')}]</div>`;
+            html += `<div><strong>Vj:</strong> [${iter.multiplicadores.vj.map(v => v.toFixed(2)).join(', ')}]</div>`;
+            html += `</div>`;
+            html += `</div>`;
+        }
+
+        // Costos reducidos (si existen)
+        if (iter.costosReducidos) {
+            html += `<div class="nw-matrix-section">`;
+            html += `<h5>Costos Reducidos</h5>`;
+            html += generarTablaMatriz(iter.costosReducidos, 'reducidos', resultado);
+            html += `</div>`;
+        }
+
+        // Estado
+        html += `<div class="nw-status ${iter.esOptimo ? 'optimal' : 'non-optimal'}">`;
+        html += iter.esOptimo ? '✅ Solución Óptima Alcanzada' : '🔄 Requiere más iteraciones';
+        html += `</div>`;
+
+        html += `</div>`;
+    });
+    html += `</div>`;
+
+    html += `</div>`;
+
+    northwestBody.innerHTML = html;
+
+    // Event listeners para tabs
+    document.querySelectorAll('.nw-tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const iteration = this.dataset.iteration;
+            document.querySelectorAll('.nw-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.nw-iteration-panel').forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelector(`.nw-iteration-panel[data-iteration="${iteration}"]`).classList.add('active');
+        });
+    });
+}
+
+// Nueva función para mostrar resultados inline (en la misma ventana)
+function displayNorthwestResultInline(resultado) {
+    const resultsSection = document.getElementById('nwResultsSection');
+    const resultsContent = document.getElementById('nwResultsContent');
+
+    if (!resultsSection || !resultsContent) return;
+
+    let html = '<div class="nw-result-container-inline">';
+
+    // Header con resultado
+    html += `<div class="nw-result-summary-inline">`;
+    html += `<div class="nw-summary-item-inline"><strong>Tipo:</strong> ${resultado.tipoOptimizacion.toUpperCase()}</div>`;
+    html += `<div class="nw-summary-item-inline nw-highlight-inline"><strong>Costo Óptimo:</strong> ${resultado.costoOptimo.toFixed(2)}</div>`;
+    html += `<div class="nw-summary-item-inline"><strong>Iteraciones:</strong> ${resultado.iteraciones.length}</div>`;
+    html += `<div class="nw-summary-item-inline"><strong>Estado:</strong> ${resultado.solucionOptimal ? '✅ Óptimo' : '⚠️ No convergió'}</div>`;
+    html += `</div>`;
+
+    if (resultado.nodeFicticioAgregado.tipo) {
+        html += `<div class="nw-warning">`;
+        html += `⚠️ Se agregó un <strong>${resultado.nodeFicticioAgregado.tipo} ficticio</strong> con cantidad ${resultado.nodeFicticioAgregado.cantidad.toFixed(2)} para balancear oferta y demanda.`;
+        html += `</div>`;
+    }
+
+    // Tabs para iteraciones
+    html += `<div class="nw-iterations-tabs">`;
+    resultado.iteraciones.forEach((iter, idx) => {
+        html += `<button class="nw-tab-btn-inline ${idx === resultado.iteraciones.length - 1 ? 'active' : ''}" data-iteration="${idx}">`;
+        html += iter.numero === 0 ? 'Inicial' : `Iter ${iter.numero}`;
+        html += `</button>`;
+    });
+    html += `</div>`;
+
+    // Contenido de iteraciones
+    html += `<div class="nw-iterations-content-inline">`;
+    resultado.iteraciones.forEach((iter, idx) => {
+        html += `<div class="nw-iteration-panel-inline ${idx === resultado.iteraciones.length - 1 ? 'active' : ''}" data-iteration="${idx}">`;
+        html += `<h4 class="nw-iteration-title">${iter.fase} ${iter.numero > 0 ? `- Iteración ${iter.numero}` : ''}</h4>`;
+        html += `<div class="nw-cost-display">Costo Total: <span class="nw-cost-value">${iter.costTotal.toFixed(2)}</span></div>`;
+
+        // Matriz de asignación
+        html += `<div class="nw-matrix-section">`;
+        html += `<h5>Matriz de Asignación</h5>`;
+        html += generarTablaMatriz(iter.asignacion, 'asignacion', resultado);
+        html += `</div>`;
+
+        // Multiplicadores (si existen)
+        if (iter.multiplicadores) {
+            html += `<div class="nw-matrix-section">`;
+            html += `<h5>Multiplicadores</h5>`;
+            html += `<div class="nw-multipliers">`;
+            html += `<div><strong>Ui:</strong> [${iter.multiplicadores.ui.map(v => v.toFixed(2)).join(', ')}]</div>`;
+            html += `<div><strong>Vj:</strong> [${iter.multiplicadores.vj.map(v => v.toFixed(2)).join(', ')}]</div>`;
+            html += `</div>`;
+            html += `</div>`;
+        }
+
+        // Costos reducidos (si existen)
+        if (iter.costosReducidos) {
+            html += `<div class="nw-matrix-section">`;
+            html += `<h5>Costos Reducidos</h5>`;
+            html += generarTablaMatriz(iter.costosReducidos, 'reducidos', resultado);
+            html += `</div>`;
+        }
+
+        // Estado
+        html += `<div class="nw-status ${iter.esOptimo ? 'optimal' : 'non-optimal'}">`;
+        html += iter.esOptimo ? '✅ Solución Óptima Alcanzada' : '🔄 Requiere más iteraciones';
+        html += `</div>`;
+
+        html += `</div>`;
+    });
+    html += `</div>`;
+
+    html += `</div>`;
+
+    resultsContent.innerHTML = html;
+    resultsSection.classList.remove('hidden');
+
+    // Event listeners para tabs inline
+    document.querySelectorAll('.nw-tab-btn-inline').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const iteration = this.dataset.iteration;
+            document.querySelectorAll('.nw-tab-btn-inline').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.nw-iteration-panel-inline').forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelector(`.nw-iteration-panel-inline[data-iteration="${iteration}"]`).classList.add('active');
+        });
+    });
+}
+
+function generarTablaMatriz(matriz, tipo, resultado) {
+    const m = matriz.length;
+    const n = matriz[0].length;
+    const isFicticio = resultado.nodeFicticioAgregado.tipo !== null;
+
+    let html = '<table class="nw-result-table">';
+    html += '<tr><th></th>';
+    for (let j = 0; j < n; j++) {
+        const esFicticioCol = isFicticio && resultado.nodeFicticioAgregado.tipo === 'destino' && j === n - 1;
+        html += `<th class="${esFicticioCol ? 'nw-ficticio' : ''}">Destino ${j + 1}${esFicticioCol ? ' (F)' : ''}</th>`;
+    }
+    html += '</tr>';
+
+    for (let i = 0; i < m; i++) {
+        const esFicticioRow = isFicticio && resultado.nodeFicticioAgregado.tipo === 'origen' && i === m - 1;
+        html += `<tr><th class="${esFicticioRow ? 'nw-ficticio' : ''}">Origen ${i + 1}${esFicticioRow ? ' (F)' : ''}</th>`;
+        for (let j = 0; j < n; j++) {
+            const valor = matriz[i][j];
+            let clase = '';
+            if (tipo === 'asignacion' && valor > 0) clase = 'nw-basica';
+            if (tipo === 'reducidos' && valor < -1e-9) clase = 'nw-negativo';
+            if (tipo === 'reducidos' && valor > 1e-9) clase = 'nw-positivo';
+
+            const texto = Math.abs(valor) < 1e-9 ? '0' : valor.toFixed(2);
+            html += `<td class="${clase}">${texto}</td>`;
+        }
+        html += '</tr>';
+    }
+    html += '</table>';
+
+    return html;
+}
