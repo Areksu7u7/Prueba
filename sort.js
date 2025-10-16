@@ -8,16 +8,9 @@ const mergeBtn = document.getElementById('mergeBtn');
 const selectionBtn = document.getElementById('selectionBtn');
 const algoName = document.getElementById('algoName');
 
-const MAX = {
-    bubble: 150,
-    insertion: 150,
-    shell: 150,
-    merge: 150,
-    selection: 150
-};
-
 let values = [];
 let sorting = false;
+let animationSpeed = 80;
 
 function randomValues(n) {
     values = Array.from({length: n}, () => Math.floor(Math.random() * 90) + 10);
@@ -25,137 +18,206 @@ function randomValues(n) {
     algoName.textContent = '';
 }
 
-function getBubbleSize(n) {
-    if (n <= 30) return 80;
-    if (n <= 60) return 60;
-    if (n <= 100) return 40;
-    return 28;
+function calculateOptimalColumns(n, containerWidth) {
+    const gap = 20;
+    
+    let maxColumns;
+    if (n <= 10) {
+        maxColumns = 3;
+    } else if (n <= 20) {
+        maxColumns = 4;
+    } else if (n <= 40) {
+        maxColumns = 6;
+    } else if (n <= 70) {
+        maxColumns = 8;
+    } else {
+        maxColumns = 10;
+    }
+    
+    const minBubbleSize = 80;
+    const possibleColumns = Math.floor(containerWidth / (minBubbleSize + gap));
+    
+    return Math.min(maxColumns, Math.max(2, possibleColumns));
 }
 
-function render(active = [], sorted = []) {
-    bubblesDiv.innerHTML = '';
-    const n = values.length;
-
-    // Calcula el área disponible
-    const containerWidth = window.innerWidth - 32; // padding/margen
-    const containerHeight = window.innerHeight * 0.6;
-
-    // Calcula el número óptimo de columnas y filas
-    let columns = Math.ceil(Math.sqrt(n * containerWidth / containerHeight));
-    columns = Math.max(1, columns);
-    let rows = Math.ceil(n / columns);
-
-    const gap = 8;
-    const sizeW = (containerWidth - (columns - 1) * gap) / columns;
-    const sizeH = (containerHeight - (rows - 1) * gap) / rows;
-
-    // Si hay pocos valores, tamaño proporcional al valor
-    if (n <= 20) {
-        // Menos columnas para que estén más juntas
-        let columns = Math.max(4, Math.ceil(n / 2));
-        let gap = 4; // Menor separación
-        const minSize = 36; // tamaño mínimo visible
-        const maxSize = 160; // tamaño máximo para el valor más grande
-        const minVal = Math.min(...values);
-        const maxVal = Math.max(...values);
-
-        bubblesDiv.style.display = "grid";
-        bubblesDiv.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-        bubblesDiv.style.gap = gap + "px";
-
-        values.forEach((v, i) => {
-            // Mucha diferencia de tamaño
-            let size = minSize + ((v - minVal) / (maxVal - minVal || 1)) * (maxSize - minSize);
-            size = Math.max(size, minSize);
-            let fontSize = Math.max(16, size * 0.38);
-
-            const div = document.createElement('div');
-            div.className = 'bubble';
-            div.style.width = size + 'px';
-            div.style.height = size + 'px';
-            div.style.borderRadius = '50%';
-            if (active.includes(i)) div.classList.add('active');
-            if (sorted.includes(i)) div.classList.add('sorted');
-            const span = document.createElement('span');
-            span.textContent = v;
-            span.style.fontSize = fontSize + 'px';
-            div.appendChild(span);
-            bubblesDiv.appendChild(div);
-        });
-    } else if (n <= 60) {
-        // Tamaño mínimo y máximo para globos bien diferenciados y redondos
-        const minSize = 38; // tamaño mínimo visible
-        const maxSize = 110; // tamaño máximo para el valor más grande
-        const minVal = Math.min(...values);
-        const maxVal = Math.max(...values);
-
-        bubblesDiv.style.display = "grid";
-        bubblesDiv.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-        bubblesDiv.style.gap = gap + "px";
-
-        values.forEach((v, i) => {
-            // Escala el tamaño según el valor, bien diferenciado
-            let size = minSize + ((v - minVal) / (maxVal - minVal || 1)) * (maxSize - minSize);
-            size = Math.max(size, minSize);
-            let fontSize = Math.max(14, size * 0.38);
-
-            const div = document.createElement('div');
-            div.className = 'bubble';
-            div.style.width = size + 'px';
-            div.style.height = size + 'px';
-            div.style.borderRadius = '50%'; // ¡Siempre redondo!
-            if (active.includes(i)) div.classList.add('active');
-            if (sorted.includes(i)) div.classList.add('sorted');
-            const span = document.createElement('span');
-            span.textContent = v;
-            span.style.fontSize = fontSize + 'px';
-            div.appendChild(span);
-            bubblesDiv.appendChild(div);
-        });
+function calculateBubbleSize(value, n) {
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+    const range = maxVal - minVal || 1;
+    const normalized = (value - minVal) / range;
+    
+    if (n <= 10) {
+        const minSize = 120;
+        const maxSize = 250;
+        const exponential = Math.pow(normalized, 0.4);
+        return Math.round(minSize + (exponential * (maxSize - minSize)));
+        
+    } else if (n <= 20) {
+        const minSize = 100;
+        const maxSize = 200;
+        const exponential = Math.pow(normalized, 0.5);
+        return Math.round(minSize + (exponential * (maxSize - minSize)));
+        
+    } else if (n <= 40) {
+        const minSize = 80;
+        const maxSize = 160;
+        const exponential = Math.pow(normalized, 0.6);
+        return Math.round(minSize + (exponential * (maxSize - minSize)));
+        
+    } else if (n <= 70) {
+        const minSize = 70;
+        const maxSize = 130;
+        return Math.round(minSize + (normalized * (maxSize - minSize)));
+        
     } else {
-        // Si hay muchos valores, todos del mismo tamaño
-        const size = Math.max(32, Math.min(sizeW, sizeH, 48));
-        let fontSize = Math.max(10, size * 0.38);
-
-        bubblesDiv.style.display = "grid";
-        bubblesDiv.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-        bubblesDiv.style.gap = gap + "px";
-
-        values.forEach((v, i) => {
-            const div = document.createElement('div');
-            div.className = 'bubble';
-            div.style.width = size + 'px';
-            div.style.height = size + 'px';
-            if (active.includes(i)) div.classList.add('active');
-            if (sorted.includes(i)) div.classList.add('sorted');
-            const span = document.createElement('span');
-            span.textContent = v;
-            span.style.fontSize = fontSize + 'px';
-            div.appendChild(span);
-            bubblesDiv.appendChild(div);
-        });
+        const minSize = 65;
+        const maxSize = 110;
+        return Math.round(minSize + (normalized * (maxSize - minSize)));
     }
 }
 
+function calculateFontSize(bubbleSize) {
+    const baseSize = Math.max(16, Math.floor(bubbleSize * 0.25));
+    return baseSize;
+}
+
+function render(active = [], sorted = [], comparing = []) {
+    bubblesDiv.innerHTML = '';
+    const n = values.length;
+    
+    if (n === 0) return;
+    
+    // Usar el ancho completo del contenedor
+    const containerWidth = bubblesDiv.clientWidth || window.innerWidth - 60;
+    const columns = calculateOptimalColumns(n, containerWidth);
+    const gap = 20;
+    
+    // Calcular número de filas necesarias
+    const rows = Math.ceil(n / columns);
+    
+    // Configurar el contenedor principal para SCROLL
+    bubblesDiv.style.overflowY = 'auto';
+    bubblesDiv.style.overflowX = 'hidden';
+    bubblesDiv.style.height = '70vh'; // Altura fija para forzar scroll
+    bubblesDiv.style.maxHeight = '70vh';
+    bubblesDiv.style.padding = '20px';
+    bubblesDiv.style.width = '100%';
+    bubblesDiv.style.boxSizing = 'border-box';
+    
+    // Calcular el tamaño máximo de globo
+    const maxBubbleSize = Math.max(...values.map(val => calculateBubbleSize(val, n)));
+    
+    // Crear contenedor de grid con altura suficiente para SCROLL
+    const gridContainer = document.createElement('div');
+    gridContainer.style.display = 'grid';
+    gridContainer.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+    gridContainer.style.gap = `${gap}px`;
+    gridContainer.style.width = '100%';
+    gridContainer.style.justifyItems = 'center';
+    gridContainer.style.alignItems = 'center';
+    
+    // Altura mínima del grid container para que haya scroll
+    const rowHeight = maxBubbleSize + gap;
+    const totalGridHeight = rows * rowHeight + 100; // Altura total del contenido
+    gridContainer.style.minHeight = `${totalGridHeight}px`;
+    gridContainer.style.padding = '10px';
+    
+    console.log(`Renderizando ${n} elementos en ${columns} columnas y ${rows} filas. Altura total: ${totalGridHeight}px`);
+    
+    // Crear TODOS los elementos
+    for (let i = 0; i < n; i++) {
+        const value = values[i];
+        const bubbleSize = calculateBubbleSize(value, n);
+        const fontSize = calculateFontSize(bubbleSize);
+        
+        // Contenedor de celda
+        const cell = document.createElement('div');
+        cell.style.display = 'flex';
+        cell.style.justifyContent = 'center';
+        cell.style.alignItems = 'center';
+        cell.style.width = '100%';
+        cell.style.height = `${rowHeight}px`; // Altura fija para cada fila
+        cell.style.minHeight = `${rowHeight}px`;
+        
+        // GLOBO PERFECTAMENTE REDONDO
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        
+        // Dimensiones fijas e iguales
+        bubble.style.width = `${bubbleSize}px`;
+        bubble.style.height = `${bubbleSize}px`;
+        bubble.style.minWidth = `${bubbleSize}px`;
+        bubble.style.minHeight = `${bubbleSize}px`;
+        bubble.style.borderRadius = '50%';
+        bubble.style.flexShrink = '0';
+        
+        // Layout interno
+        bubble.style.display = 'flex';
+        bubble.style.alignItems = 'center';
+        bubble.style.justifyContent = 'center';
+        bubble.style.position = 'relative';
+        
+        // Aplicar estados
+        if (active.includes(i)) bubble.classList.add('active');
+        if (sorted.includes(i)) bubble.classList.add('sorted');
+        if (comparing.includes(i)) bubble.classList.add('comparing');
+        
+        // Número centrado
+        const span = document.createElement('span');
+        span.textContent = value;
+        span.style.fontSize = `${fontSize}px`;
+        span.style.fontWeight = 'bold';
+        span.style.color = '#000';
+        span.style.textShadow = '1px 1px 3px rgba(255,255,255,0.9)';
+        span.style.display = 'flex';
+        span.style.alignItems = 'center';
+        span.style.justifyContent = 'center';
+        span.style.width = '100%';
+        span.style.height = '100%';
+        span.style.position = 'absolute';
+        span.style.top = '0';
+        span.style.left = '0';
+        span.style.pointerEvents = 'none';
+        
+        bubble.appendChild(span);
+        cell.appendChild(bubble);
+        gridContainer.appendChild(cell);
+    }
+    
+    bubblesDiv.appendChild(gridContainer);
+    
+    // Forzar update del scroll
+    setTimeout(() => {
+        bubblesDiv.scrollTop = 0;
+        // Verificar que todos los elementos se renderizaron
+        const renderedBubbles = bubblesDiv.querySelectorAll('.bubble');
+        console.log(`Elementos renderizados: ${renderedBubbles.length} de ${n}`);
+        
+        if (renderedBubbles.length !== n) {
+            console.warn('No se renderizaron todos los elementos!');
+        }
+    }, 100);
+}
+
 function disableButtons(disabled) {
-    bubbleBtn.disabled = disabled;
-    insertionBtn.disabled = disabled;
-    shellBtn.disabled = disabled;
-    mergeBtn.disabled = disabled;
-    selectionBtn.disabled = disabled;
-    randomBtn.disabled = disabled;
+    const buttons = [bubbleBtn, insertionBtn, shellBtn, mergeBtn, selectionBtn, randomBtn];
+    buttons.forEach(btn => {
+        btn.disabled = disabled;
+    });
     numInput.disabled = disabled;
 }
 
+// Event listeners
 numInput.addEventListener('change', () => {
     let n = parseInt(numInput.value);
     if (isNaN(n) || n < 5) n = 5;
     if (n > 150) n = 150;
     numInput.value = n;
-    randomValues(n);
+    if (!sorting) randomValues(n);
 });
 
 randomBtn.onclick = () => {
+    if (sorting) return;
     let n = parseInt(numInput.value);
     if (isNaN(n) || n < 5) n = 5;
     if (n > 150) n = 150;
@@ -164,59 +226,81 @@ randomBtn.onclick = () => {
 };
 
 function sleep(ms) {
-    return new Promise(res => setTimeout(res, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Algoritmos de ordenamiento
 async function bubbleSort() {
-    algoName.textContent = 'Bubble Sort';
-    for (let i = 0; i < values.length - 1; i++) {
-        for (let j = 0; j < values.length - i - 1; j++) {
-            render([j, j+1], Array.from({length: i}, (_, k) => values.length - 1 - k));
-            await sleep(60);
-            if (values[j] > values[j+1]) {
-                [values[j], values[j+1]] = [values[j+1], values[j]];
-                render([j, j+1], Array.from({length: i}, (_, k) => values.length - 1 - k));
-                await sleep(60);
+    algoName.textContent = 'Bubble Sort - O(n²)';
+    const n = values.length;
+    animationSpeed = Math.max(60, 3000 / n);
+    
+    for (let i = 0; i < n - 1; i++) {
+        for (let j = 0; j < n - i - 1; j++) {
+            if (!sorting) return;
+            
+            render([j, j + 1], Array.from({length: i}, (_, k) => n - 1 - k));
+            await sleep(animationSpeed);
+            
+            if (values[j] > values[j + 1]) {
+                [values[j], values[j + 1]] = [values[j + 1], values[j]];
+                render([j, j + 1], Array.from({length: i}, (_, k) => n - 1 - k));
+                await sleep(animationSpeed);
             }
         }
     }
-    render([], values.map((_, i) => i));
+    render([], Array.from({length: n}, (_, i) => i));
 }
 
 async function insertionSort() {
-    algoName.textContent = 'Insertion Sort';
+    algoName.textContent = 'Insertion Sort - O(n²)';
+    animationSpeed = Math.max(70, 2500 / values.length);
+    
     for (let i = 1; i < values.length; i++) {
         let key = values[i];
         let j = i - 1;
+        
         while (j >= 0 && values[j] > key) {
+            if (!sorting) return;
+            
             values[j + 1] = values[j];
-            render([j, j+1]);
-            await sleep(60);
+            render([j, j + 1, i], [], [j, j + 1]);
+            await sleep(animationSpeed);
             j--;
         }
+        
         values[j + 1] = key;
-        render([j+1]);
-        await sleep(60);
+        render([j + 1]);
+        await sleep(animationSpeed);
     }
     render([], values.map((_, i) => i));
 }
 
 async function shellSort() {
-    algoName.textContent = 'Shell Sort';
-    let gap = Math.floor(values.length / 2);
+    algoName.textContent = 'Shell Sort - O(n log n)';
+    animationSpeed = Math.max(80, 2000 / values.length);
+    let n = values.length;
+    let gap = Math.floor(n / 2);
+    
     while (gap > 0) {
-        for (let i = gap; i < values.length; i++) {
+        for (let i = gap; i < n; i++) {
+            if (!sorting) return;
+            
             let temp = values[i];
             let j = i;
+            
             while (j >= gap && values[j - gap] > temp) {
+                if (!sorting) return;
+                
                 values[j] = values[j - gap];
-                render([j, j-gap]);
-                await sleep(60);
+                render([j, j - gap, i], [], [j, j - gap]);
+                await sleep(animationSpeed);
                 j -= gap;
             }
+            
             values[j] = temp;
-            render([j]);
-            await sleep(60);
+            render([j, i]);
+            await sleep(animationSpeed);
         }
         gap = Math.floor(gap / 2);
     }
@@ -224,64 +308,95 @@ async function shellSort() {
 }
 
 async function mergeSortMain() {
-    algoName.textContent = 'Merge Sort';
-    async function mergeSort(arr, l, r) {
-        if (l >= r) return;
-        let m = Math.floor((l + r) / 2);
-        await mergeSort(arr, l, m);
-        await mergeSort(arr, m + 1, r);
-        await merge(arr, l, m, r);
+    algoName.textContent = 'Merge Sort - O(n log n)';
+    animationSpeed = Math.max(90, 1800 / values.length);
+    
+    async function mergeSort(start, end) {
+        if (start >= end) return;
+        
+        const mid = Math.floor((start + end) / 2);
+        await mergeSort(start, mid);
+        await mergeSort(mid + 1, end);
+        await merge(start, mid, end);
     }
-    async function merge(arr, l, m, r) {
-        let left = arr.slice(l, m + 1);
-        let right = arr.slice(m + 1, r + 1);
-        let i = 0, j = 0, k = l;
+    
+    async function merge(start, mid, end) {
+        const left = values.slice(start, mid + 1);
+        const right = values.slice(mid + 1, end + 1);
+        
+        let i = 0, j = 0, k = start;
+        
         while (i < left.length && j < right.length) {
-            render([k]);
-            await sleep(60);
+            if (!sorting) return;
+            
+            render([start + i, mid + 1 + j, k], [], [start + i, mid + 1 + j]);
+            await sleep(animationSpeed);
+            
             if (left[i] <= right[j]) {
-                arr[k++] = left[i++];
+                values[k] = left[i];
+                i++;
             } else {
-                arr[k++] = right[j++];
+                values[k] = right[j];
+                j++;
             }
+            k++;
         }
+        
         while (i < left.length) {
-            render([k]);
-            await sleep(60);
-            arr[k++] = left[i++];
+            if (!sorting) return;
+            values[k] = left[i];
+            render([start + i, k]);
+            await sleep(animationSpeed);
+            i++;
+            k++;
         }
+        
         while (j < right.length) {
-            render([k]);
-            await sleep(60);
-            arr[k++] = right[j++];
+            if (!sorting) return;
+            values[k] = right[j];
+            render([mid + 1 + j, k]);
+            await sleep(animationSpeed);
+            j++;
+            k++;
         }
     }
-    await mergeSort(values, 0, values.length - 1);
-    render([], values.map((_, i) => i));
+    
+    await mergeSort(0, values.length - 1);
+    if (sorting) {
+        render([], values.map((_, i) => i));
+    }
 }
 
 async function selectionSort() {
-    algoName.textContent = 'Selection Sort';
+    algoName.textContent = 'Selection Sort - O(n²)';
+    animationSpeed = Math.max(70, 2500 / values.length);
+    
     for (let i = 0; i < values.length - 1; i++) {
         let minIdx = i;
+        
         for (let j = i + 1; j < values.length; j++) {
-            render([minIdx, j]);
-            await sleep(60);
+            if (!sorting) return;
+            
+            render([minIdx, j, i], [], [minIdx, j]);
+            await sleep(animationSpeed);
+            
             if (values[j] < values[minIdx]) {
                 minIdx = j;
-                render([minIdx, j]);
-                await sleep(60);
+                render([minIdx, j, i], [], [minIdx, j]);
+                await sleep(animationSpeed);
             }
         }
+        
         if (minIdx !== i) {
             [values[i], values[minIdx]] = [values[minIdx], values[i]];
             render([i, minIdx]);
-            await sleep(60);
+            await sleep(animationSpeed);
         }
     }
     render([], values.map((_, i) => i));
 }
 
+// Event listeners para los botones de ordenamiento
 bubbleBtn.onclick = async () => {
     if (sorting) return;
     sorting = true;
@@ -290,6 +405,7 @@ bubbleBtn.onclick = async () => {
     sorting = false;
     disableButtons(false);
 };
+
 insertionBtn.onclick = async () => {
     if (sorting) return;
     sorting = true;
@@ -298,6 +414,7 @@ insertionBtn.onclick = async () => {
     sorting = false;
     disableButtons(false);
 };
+
 shellBtn.onclick = async () => {
     if (sorting) return;
     sorting = true;
@@ -306,6 +423,7 @@ shellBtn.onclick = async () => {
     sorting = false;
     disableButtons(false);
 };
+
 mergeBtn.onclick = async () => {
     if (sorting) return;
     sorting = true;
@@ -314,6 +432,7 @@ mergeBtn.onclick = async () => {
     sorting = false;
     disableButtons(false);
 };
+
 selectionBtn.onclick = async () => {
     if (sorting) return;
     sorting = true;
@@ -322,6 +441,20 @@ selectionBtn.onclick = async () => {
     sorting = false;
     disableButtons(false);
 };
+
+// Inicialización y manejo de redimensionamiento
+window.addEventListener('resize', () => {
+    if (!sorting) {
+        render();
+    }
+});
+
+window.addEventListener('load', () => {
+    // Asegurar que el CSS esté cargado antes de renderizar
+    setTimeout(() => {
+        randomValues(parseInt(numInput.value));
+    }, 100);
+});
 
 // Inicializar
 randomValues(parseInt(numInput.value));

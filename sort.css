@@ -6,6 +6,7 @@ html, body {
     box-sizing: border-box;
     overflow-x: hidden;
 }
+
 body {
     min-height: 100vh;
     min-width: 100vw;
@@ -15,7 +16,11 @@ body {
     color: #fff;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
+
 h1 {
     font-size: 2.2rem;
     margin: 24px 0 10px 0;
@@ -23,6 +28,7 @@ h1 {
     text-shadow: 0 0 10px #00f7ff55;
     text-align: center;
 }
+
 .controls {
     margin-bottom: 18px;
     display: flex;
@@ -30,12 +36,15 @@ h1 {
     gap: 10px;
     justify-content: center;
     align-items: center;
+    padding: 0 20px;
 }
+
 .controls label {
     font-size: 1rem;
     margin-right: 6px;
     color: #ffd700;
 }
+
 .controls input[type="number"] {
     width: 60px;
     padding: 6px;
@@ -47,6 +56,7 @@ h1 {
     margin-right: 8px;
     text-align: center;
 }
+
 .controls button {
     padding: 8px 16px;
     border-radius: 8px;
@@ -57,109 +67,162 @@ h1 {
     cursor: pointer;
     font-size: 1rem;
     box-shadow: 0 2px 8px #00f7ff33;
-    transition: background 0.2s, box-shadow 0.2s;
+    transition: all 0.2s ease;
 }
+
+.controls button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px #00f7ff66;
+}
+
 .controls button:disabled {
     background: #444;
     color: #aaa;
     cursor: not-allowed;
     box-shadow: none;
-}
-.bubbles {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(22px, 1fr));
-    gap: 8px;
-    width: 100vw;
-    height: 60vh;
-    justify-items: center;
-    align-items: end;
-    padding: 12px 2vw 0 2vw;
-    box-sizing: border-box;
-    overflow-y: auto;
-    max-height: 60vh;
-}
-.bubble {
-    border-radius: 50% !important;
-    aspect-ratio: 1/1;
-    width: 100%;
-    max-width: 70px;
-    min-width: 22px;
-    min-height: 22px;
-    background: radial-gradient(circle at 60% 40%, #00f7ff 80%, #23234a 100%);
-    color: #222;
-    border-radius: 50%;
-    text-align: center;
-    font-size: 1.1rem;
-    font-weight: bold;
-    margin-bottom: 0;
-    box-shadow: 0 4px 18px #00f7ff55, 0 0 0 #ffd700, 0 0 32px #00f7ff22 inset;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    position: relative;
-    transition: height 0.18s, width 0.18s, background 0.18s, box-shadow 0.18s, transform 0.12s cubic-bezier(.4,2,.6,1);
-    user-select: none;
-}
-.bubble span {
-    position: absolute;
-    bottom: 14px;
-    left: 0;
-    right: 0;
-    font-size: 1.1rem;
-    pointer-events: none;
-}
-.bubble.active {
-    background: radial-gradient(circle at 60% 40%, #ffd700 80%, #23234a 100%);
-    box-shadow: 0 0 28px #ffd70099, 0 0 0 #00f7ff, 0 0 32px #ffd70044 inset;
-    transform: scale(1.08);
-    z-index: 2;
-    animation: inflate 0.12s;
-}
-@keyframes inflate {
-    0% { transform: scale(1); }
-    70% { transform: scale(1.12); }
-    100% { transform: scale(1.08); }
-}
-.bubble.sorted {
-    background: radial-gradient(circle at 60% 40%, #0f0 80%, #23234a 100%);
-    box-shadow: 0 0 18px #0f09, 0 0 32px #0f04 inset;
-    transform: scale(1.04);
-    z-index: 1;
-}
-#algoName {
-    margin-top: 18px;
-    font-size: 1.1rem;
-    color: #ffd700;
-    min-height: 24px;
-    letter-spacing: 1px;
-    text-align: center;
+    transform: none;
 }
 
-/* Oculta los números si hay muchos globos */
+.bubbles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    align-items: flex-end;
+    width: 95%;
+    max-width: 1200px;
+    min-height: 400px;
+    padding: 20px;
+    box-sizing: border-box;
+    margin: 0 auto;
+}
+
+.bubble {
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #00f7ff, #0066ff);
+    color: #222;
+    text-align: center;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 4px 15px rgba(0, 247, 255, 0.3),
+        0 0 0 rgba(255, 215, 0, 0),
+        inset 0 2px 8px rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
+    border: 2px solid transparent;
+}
+
+.bubble span {
+    pointer-events: none;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+    z-index: 1;
+}
+
+.bubble.active {
+    background: radial-gradient(circle at 30% 30%, #ffd700, #ff6b00);
+    box-shadow: 
+        0 0 25px rgba(255, 215, 0, 0.8),
+        0 0 15px rgba(255, 107, 0, 0.6),
+        inset 0 2px 8px rgba(255, 255, 255, 0.3);
+    transform: scale(1.15);
+    z-index: 10;
+    border: 2px solid #fff;
+    animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.25); }
+    100% { transform: scale(1.15); }
+}
+
+.bubble.sorted {
+    background: radial-gradient(circle at 30% 30%, #00ff88, #00cc66);
+    box-shadow: 
+        0 0 20px rgba(0, 255, 136, 0.6),
+        0 0 10px rgba(0, 204, 102, 0.4),
+        inset 0 2px 8px rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+    z-index: 5;
+    border: 2px solid #00ff88;
+}
+
+.bubble.comparing {
+    background: radial-gradient(circle at 30% 30%, #ff4444, #cc0000);
+    box-shadow: 
+        0 0 20px rgba(255, 68, 68, 0.6),
+        0 0 10px rgba(204, 0, 0, 0.4),
+        inset 0 2px 8px rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+    z-index: 8;
+}
+
 .bubble.hide-number span {
     display: none;
 }
 
+#algoName {
+    margin-top: 18px;
+    font-size: 1.3rem;
+    color: #ffd700;
+    min-height: 30px;
+    letter-spacing: 1px;
+    text-align: center;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
 /* Responsive para pantallas pequeñas */
-@media (max-width: 600px) {
-    .bubbles {
-        grid-template-columns: repeat(auto-fit, minmax(16px, 1fr));
-        gap: 4px;
-        padding: 8px 1vw 0 1vw;
-        height: 50vh;
-        max-height: 50vh;
-    }
-    .bubble {
-        max-width: 32px;
-        min-width: 16px;
-        min-height: 16px;
-        font-size: 0.7rem;
-    }
+@media (max-width: 768px) {
     h1 {
-        font-size: 1.1rem;
+        font-size: 1.6rem;
+        margin: 16px 0 8px 0;
     }
+    
     .controls {
-        font-size: 0.8rem;
+        gap: 6px;
+        padding: 0 10px;
+    }
+    
+    .controls button {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .bubbles {
+        gap: 6px;
+        padding: 15px 10px;
+        min-height: 300px;
+    }
+    
+    #algoName {
+        font-size: 1.1rem;
+        margin-top: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.3rem;
+    }
+    
+    .controls {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .controls label, 
+    .controls input[type="number"] {
+        margin-right: 0;
+    }
+    
+    .bubbles {
         gap: 4px;
+        padding: 10px 5px;
+        min-height: 250px;
     }
 }
