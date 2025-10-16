@@ -45,33 +45,96 @@ function render(active = [], sorted = []) {
     columns = Math.max(1, columns);
     let rows = Math.ceil(n / columns);
 
-    // Calcula el tamaño de cada burbuja
     const gap = 8;
     const sizeW = (containerWidth - (columns - 1) * gap) / columns;
     const sizeH = (containerHeight - (rows - 1) * gap) / rows;
-    const size = Math.max(32, Math.min(sizeW, sizeH, 90)); // nunca menor a 32px ni mayor a 90px
 
-    // Aplica el grid dinámico
-    bubblesDiv.style.display = "grid";
-    bubblesDiv.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-    bubblesDiv.style.gap = gap + "px";
+    // Si hay pocos valores, tamaño proporcional al valor
+    if (n <= 20) {
+        // Menos columnas para que estén más juntas
+        let columns = Math.max(4, Math.ceil(n / 2));
+        let gap = 4; // Menor separación
+        const minSize = 36; // tamaño mínimo visible
+        const maxSize = 160; // tamaño máximo para el valor más grande
+        const minVal = Math.min(...values);
+        const maxVal = Math.max(...values);
 
-    // Ajusta el tamaño de fuente según el tamaño de la burbuja
-    let fontSize = Math.max(10, size * 0.38);
+        bubblesDiv.style.display = "grid";
+        bubblesDiv.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+        bubblesDiv.style.gap = gap + "px";
 
-    values.forEach((v, i) => {
-        const div = document.createElement('div');
-        div.className = 'bubble';
-        div.style.width = size + 'px';
-        div.style.height = size + 'px';
-        if (active.includes(i)) div.classList.add('active');
-        if (sorted.includes(i)) div.classList.add('sorted');
-        const span = document.createElement('span');
-        span.textContent = v;
-        span.style.fontSize = fontSize + 'px';
-        div.appendChild(span);
-        bubblesDiv.appendChild(div);
-    });
+        values.forEach((v, i) => {
+            // Mucha diferencia de tamaño
+            let size = minSize + ((v - minVal) / (maxVal - minVal || 1)) * (maxSize - minSize);
+            size = Math.max(size, minSize);
+            let fontSize = Math.max(16, size * 0.38);
+
+            const div = document.createElement('div');
+            div.className = 'bubble';
+            div.style.width = size + 'px';
+            div.style.height = size + 'px';
+            div.style.borderRadius = '50%';
+            if (active.includes(i)) div.classList.add('active');
+            if (sorted.includes(i)) div.classList.add('sorted');
+            const span = document.createElement('span');
+            span.textContent = v;
+            span.style.fontSize = fontSize + 'px';
+            div.appendChild(span);
+            bubblesDiv.appendChild(div);
+        });
+    } else if (n <= 60) {
+        // Tamaño mínimo y máximo para globos bien diferenciados y redondos
+        const minSize = 38; // tamaño mínimo visible
+        const maxSize = 110; // tamaño máximo para el valor más grande
+        const minVal = Math.min(...values);
+        const maxVal = Math.max(...values);
+
+        bubblesDiv.style.display = "grid";
+        bubblesDiv.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+        bubblesDiv.style.gap = gap + "px";
+
+        values.forEach((v, i) => {
+            // Escala el tamaño según el valor, bien diferenciado
+            let size = minSize + ((v - minVal) / (maxVal - minVal || 1)) * (maxSize - minSize);
+            size = Math.max(size, minSize);
+            let fontSize = Math.max(14, size * 0.38);
+
+            const div = document.createElement('div');
+            div.className = 'bubble';
+            div.style.width = size + 'px';
+            div.style.height = size + 'px';
+            div.style.borderRadius = '50%'; // ¡Siempre redondo!
+            if (active.includes(i)) div.classList.add('active');
+            if (sorted.includes(i)) div.classList.add('sorted');
+            const span = document.createElement('span');
+            span.textContent = v;
+            span.style.fontSize = fontSize + 'px';
+            div.appendChild(span);
+            bubblesDiv.appendChild(div);
+        });
+    } else {
+        // Si hay muchos valores, todos del mismo tamaño
+        const size = Math.max(32, Math.min(sizeW, sizeH, 48));
+        let fontSize = Math.max(10, size * 0.38);
+
+        bubblesDiv.style.display = "grid";
+        bubblesDiv.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+        bubblesDiv.style.gap = gap + "px";
+
+        values.forEach((v, i) => {
+            const div = document.createElement('div');
+            div.className = 'bubble';
+            div.style.width = size + 'px';
+            div.style.height = size + 'px';
+            if (active.includes(i)) div.classList.add('active');
+            if (sorted.includes(i)) div.classList.add('sorted');
+            const span = document.createElement('span');
+            span.textContent = v;
+            span.style.fontSize = fontSize + 'px';
+            div.appendChild(span);
+            bubblesDiv.appendChild(div);
+        });
+    }
 }
 
 function disableButtons(disabled) {

@@ -79,6 +79,7 @@ h1 {
     max-height: 60vh;
 }
 .bubble {
+    border-radius: 50% !important;
     aspect-ratio: 1/1;
     width: 100%;
     max-width: 70px;
