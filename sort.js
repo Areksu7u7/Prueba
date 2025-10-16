@@ -35,42 +35,43 @@ function getBubbleSize(n) {
 function render(active = [], sorted = []) {
     bubblesDiv.innerHTML = '';
     const n = values.length;
-    let size;
-    if (n <= 60) {
-        // Tamaño proporcional al valor, mínimo 38px
-        const minSize = 38, maxSize = 70;
-        const minVal = Math.min(...values);
-        const maxVal = Math.max(...values);
-        values.forEach((v, i) => {
-            size = minSize + ((v - minVal) / (maxVal - minVal || 1)) * (maxSize - minSize);
-            size = Math.max(size, minSize);
-            const div = document.createElement('div');
-            div.className = 'bubble';
-            div.style.width = size + 'px';
-            div.style.height = size + 'px';
-            if (active.includes(i)) div.classList.add('active');
-            if (sorted.includes(i)) div.classList.add('sorted');
-            const span = document.createElement('span');
-            span.textContent = v;
-            div.appendChild(span);
-            bubblesDiv.appendChild(div);
-        });
-    } else {
-        // Todos del mismo tamaño, suficientemente grande para mostrar el número
-        size = Math.max(28, 240 / Math.sqrt(n)); // Ajusta el tamaño según la cantidad
-        values.forEach((v, i) => {
-            const div = document.createElement('div');
-            div.className = 'bubble';
-            div.style.width = size + 'px';
-            div.style.height = size + 'px';
-            if (active.includes(i)) div.classList.add('active');
-            if (sorted.includes(i)) div.classList.add('sorted');
-            const span = document.createElement('span');
-            span.textContent = v;
-            div.appendChild(span);
-            bubblesDiv.appendChild(div);
-        });
-    }
+
+    // Calcula el área disponible
+    const containerWidth = window.innerWidth - 32; // padding/margen
+    const containerHeight = window.innerHeight * 0.6;
+
+    // Calcula el número óptimo de columnas y filas
+    let columns = Math.ceil(Math.sqrt(n * containerWidth / containerHeight));
+    columns = Math.max(1, columns);
+    let rows = Math.ceil(n / columns);
+
+    // Calcula el tamaño de cada burbuja
+    const gap = 8;
+    const sizeW = (containerWidth - (columns - 1) * gap) / columns;
+    const sizeH = (containerHeight - (rows - 1) * gap) / rows;
+    const size = Math.max(32, Math.min(sizeW, sizeH, 90)); // nunca menor a 32px ni mayor a 90px
+
+    // Aplica el grid dinámico
+    bubblesDiv.style.display = "grid";
+    bubblesDiv.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+    bubblesDiv.style.gap = gap + "px";
+
+    // Ajusta el tamaño de fuente según el tamaño de la burbuja
+    let fontSize = Math.max(10, size * 0.38);
+
+    values.forEach((v, i) => {
+        const div = document.createElement('div');
+        div.className = 'bubble';
+        div.style.width = size + 'px';
+        div.style.height = size + 'px';
+        if (active.includes(i)) div.classList.add('active');
+        if (sorted.includes(i)) div.classList.add('sorted');
+        const span = document.createElement('span');
+        span.textContent = v;
+        span.style.fontSize = fontSize + 'px';
+        div.appendChild(span);
+        bubblesDiv.appendChild(div);
+    });
 }
 
 function disableButtons(disabled) {

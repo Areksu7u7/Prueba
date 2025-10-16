@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algoritmos de Árboles de Expansión Mínima</title>
+    <style>
+        :root {
+            --primary: #00f7ff;
+            --secondary: #ff00e6;
+            --background: #0a0a0f;
+            --surface: #1a1a2e;
+            --text: #e0e0ff;
+            --accent: #7f00ff;
+            --danger: #ff0055;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}
+        body{background:var(--background);color:var(--text);overflow:hidden;height:100vh;width:100vw}
+        .title{position:absolute;top:72px;left:50%;transform:translateX(-50%);font-size:24px;font-weight:bold;color:var(--primary);text-shadow:0 0 10px var(--primary);z-index:110;letter-spacing:2px;background:rgba(26,26,46,.7);padding:8px 20px;border-radius:10px;border:1px solid var(--primary);box-shadow:0 0 20px rgba(0,247,255,.3)}
+        .hidden{display:none !important}
+        /* Top navigation bar */
+        .topbar{position:fixed;top:0;left:0;right:0;height:56px;background:rgba(26,26,46,.92);border-bottom:1px solid var(--primary);display:flex;align-items:center;justify-content:space-between;padding:8px 16px;z-index:120;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 2px 18px rgba(0,247,255,.12)}
+        .tabs{display:flex;gap:8px;align-items:center}
+        .tab-btn{background:rgba(0,247,255,.18);border:1px solid var(--primary);color:var(--text);padding:8px 12px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s ease;display:flex;align-items:center;gap:8px}
+        .tab-btn:hover{background:rgba(0,247,255,.32);box-shadow:0 0 12px rgba(0,247,255,.35)}
+        .tab-btn.critical{background:linear-gradient(90deg, rgba(255,0,85,.25), rgba(127,0,255,.25));border-color:var(--danger)}
+        .tab-btn.critical:hover{background:linear-gradient(90deg, rgba(255,0,85,.4), rgba(127,0,255,.35));box-shadow:0 0 14px rgba(255,0,85,.45)}
+        .tab-btn.johnson-mode{background:linear-gradient(90deg, rgba(255,215,0,.25), rgba(255,140,0,.25));border-color:#ffd700;color:#ffd700}
+        .tab-btn.johnson-mode:hover{background:linear-gradient(90deg, rgba(255,215,0,.4), rgba(255,140,0,.35));box-shadow:0 0 14px rgba(255,215,0,.45)}
+        .right-controls{display:flex;align-items:center;gap:12px}
+        .dropdown{position:relative}
+        .dropdown-toggle{background:rgba(0,247,255,.18);border:1px solid var(--primary);color:var(--text);padding:8px 12px;border-radius:8px;cursor:pointer;font-size:14px;transition:all .2s ease}
+        .dropdown-toggle:hover{background:rgba(0,247,255,.32)}
+        .dropdown-menu{position:absolute;top:calc(100% + 6px);right:0;background:rgba(26,26,46,.98);border:1px solid var(--primary);border-radius:8px;min-width:180px;box-shadow:0 10px 24px rgba(0,0,0,.3);padding:6px;display:none;z-index:200}
+        .dropdown-menu.show{display:block;animation:fadeIn .15s ease}
+        .dropdown-item{width:100%;text-align:left;background:transparent;border:none;color:var(--text);padding:10px 12px;border-radius:6px;cursor:pointer;font-size:14px}
+        .dropdown-item:hover{background:rgba(0,247,255,.2)}
+        /* Analysis dropdown hover */
+        .dropdown.analysis:hover > .dropdown-menu{display:block}
+        .has-submenu{position:relative}
+        .has-submenu .submenu{top:0;left:100%;right:auto}
+        .dropdown.analysis .submenu{position:absolute;display:none}
+        .dropdown.analysis .has-submenu:hover > .submenu{display:block}
+        /* rows inside dropdown for color pickers */
+        .dropdown-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px}
+        .dropdown-row + .dropdown-row{border-top:1px dashed rgba(0,247,255,.2)}
+        .dropdown-label{font-size:13px;color:var(--primary)}
+        .dropdown-row input[type=color]{width:48px;height:32px;border:1px solid var(--primary);background:rgba(10,10,15,.7);border-radius:6px;cursor:pointer;padding:0}
+        .container{display:flex;height:100vh}
+        #canvas{flex-grow:1;background:linear-gradient(135deg,var(--background),#0f0f1a);cursor:crosshair;position:relative;overflow:hidden;padding-top:140px}
+        .grid{position:absolute;top:0;left:0;right:0;bottom:0;background-image:linear-gradient(to right,rgba(0,247,255,.05) 1px,transparent 1px),linear-gradient(to bottom,rgba(0,247,255,.05) 1px,transparent 1px);background-size:20px 20px;pointer-events:none}
+        .menu{position:absolute;top:120px;left:20px;z-index:100}
+        .menu-toggle{background:rgba(26,26,46,.8);border:1px solid var(--primary);color:var(--primary);padding:10px 15px;border-radius:5px;cursor:pointer;font-size:16px;box-shadow:0 0 10px rgba(0,247,255,.3);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);transition:all .3s ease}
+        .menu-toggle:hover{background:rgba(0,247,255,.2);box-shadow:0 0 15px rgba(0,247,255,.5)}
+        .menu-content{display:none;position:absolute;top:50px;left:0;background:rgba(26,26,46,.9);border:1px solid var(--primary);border-radius:5px;padding:15px;min-width:250px;box-shadow:0 0 20px rgba(0,247,255,.3);backdrop-filter:blur(10px);z-index:101}
+        .menu-content.show{display:block;animation:fadeIn .3s ease}
+        .menu-item{margin-bottom:10px}
+        .menu-item label{display:block;margin-bottom:5px;font-size:14px;color:var(--primary)}
+        .menu-item input[type=color]{width:100%;height:40px;border:1px solid var(--primary);background:rgba(10,10,15,.7);border-radius:3px;cursor:pointer}
+        .menu-item select,.menu-item button{width:100%;padding:8px;background:rgba(0,247,255,.2);border:1px solid var(--primary);color:var(--text);border-radius:3px;cursor:pointer;font-size:14px;transition:all .3s ease;margin-top:5px}
+        .menu-item button:hover{background:rgba(0,247,255,.4)}
+        .node{position:absolute;width:50px;height:50px;border-radius:50%;background:radial-gradient(circle,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;color:var(--background);font-weight:bold;cursor:move;box-shadow:0 0 10px var(--primary);transition:transform .2s,box-shadow .3s;-webkit-user-select:none;user-select:none;z-index:10;flex-direction:column;gap:2px;text-align:center}
+        .node:hover{transform:scale(1.1);box-shadow:0 0 15px var(--primary)}
+        .node.selected{box-shadow:0 0 20px var(--secondary);background:radial-gradient(circle,var(--secondary),var(--accent))}
+        .node-label,.node-metrics{pointer-events:none;line-height:1}
+        .node-label{font-size:12px;font-weight:700}
+        .node-metrics{font-size:11px;opacity:.95}
+        .svg-container{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5}
+        .edge-path{stroke:var(--primary);stroke-width:3;fill:none;filter:drop-shadow(0 0 3px var(--primary));cursor:pointer}
+        .arrow-marker{fill:var(--primary)}
+        .edge-label{position:absolute;background:rgba(255,255,255,.95);color:#222;padding:2px 8px;border-radius:999px;font-size:13px;font-weight:700;border:1px solid rgba(0,0,0,.06);z-index:6;pointer-events:auto;box-shadow:0 2px 6px rgba(0,0,0,.15);text-align:center;min-width:20px}
+        .edge-h{position:absolute;background:rgba(255,255,255,.85);color:#222;padding:2px 6px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid rgba(0,0,0,.1);z-index:7;pointer-events:none}
+        .bottom-banner{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);padding:10px 18px;border:1px solid var(--primary);border-radius:999px;background:linear-gradient(90deg, rgba(0,247,255,.15), rgba(127,0,255,.15));color:var(--text);font-weight:700;letter-spacing:.5px;z-index:2000;box-shadow:0 0 18px rgba(0,247,255,.35), inset 0 0 10px rgba(127,0,255,.2)}
+        /* Assignment result grid */
+        .assignment-summary{font-size:18px;color:var(--primary);font-weight:700;margin-bottom:14px;text-align:center}
+        .assignment-grid{display:grid;gap:10px}
+        .assignment-grid .header{font-weight:700;color:var(--primary);text-align:center}
+        .assignment-cell{background:rgba(255,255,255,.9);color:#222;border-radius:10px;border:1px solid rgba(0,0,0,.08);padding:18px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+        .assignment-cell.selected{background:rgba(255,0,85,.25);border-color:var(--danger)}
+        .matrix-container{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(26,26,46,.95);border:1px solid var(--primary);border-radius:15px;padding:20px;min-width:400px;max-width:90%;max-height:40vh;overflow:auto;box-shadow:0 0 30px rgba(0,247,255,.5);z-index:1000}
+        .matrix-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+        .matrix-title{color:var(--primary);font-size:20px;font-weight:bold;text-shadow:0 0 10px var(--primary)}
+        .close-btn{background:none;border:none;color:var(--danger);font-size:24px;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all .3s ease}
+        .close-btn:hover{background:rgba(255,0,85,.2);box-shadow:0 0 10px var(--danger)}
+        .matrix-table{border-collapse:collapse;width:100%;background:rgba(10,10,15,.3);border-radius:10px;overflow:hidden}
+        .matrix-table th,.matrix-table td{border:1px solid var(--primary);padding:10px;text-align:center;min-width:50px;font-size:14px}
+        .matrix-table th{background:rgba(0,247,255,.2);color:var(--primary);font-weight:bold}
+        .matrix-input{width:50px;background:rgba(10,10,15,.7);border:1px solid var(--primary);color:var(--text);text-align:center;padding:5px;border-radius:5px;font-size:14px}
+        .help-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,10,15,.95);z-index:2000;overflow:auto;padding:20px}
+        .help-content{background:rgba(26,26,46,.9);border:1px solid var(--primary);border-radius:10px;padding:30px;margin:40px auto;max-width:800px;box-shadow:0 0 30px rgba(0,247,255,.5);color:var(--text)}
+        .help-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+        .help-title{font-size:24px;color:var(--primary)}
+        .help-close{background:none;border:none;color:var(--danger);font-size:28px;cursor:pointer}
+        .help-close:hover{color:white}
+        .help-body h3{color:var(--primary);margin:20px 0 10px}
+        .help-body ul{padding-left:20px;margin-bottom:15px}
+        .help-body li{margin-bottom:8px}
+        .help-footer{text-align:center;margin-top:30px}
+        .help-footer-btn{padding:10px 20px;background:rgba(0,247,255,.2);border:1px solid var(--primary);color:var(--text);font-size:16px;border-radius:5px;cursor:pointer}
+        .help-footer-btn:hover{background:rgba(0,247,255,.4)}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+        .context-menu{position:absolute;background:rgba(26,26,46,.95);border:1px solid var(--primary);border-radius:5px;box-shadow:0 0 20px rgba(0,247,255,.5);z-index:1000;min-width:180px}
+        .context-menu-item{padding:10px 15px;color:var(--text);cursor:pointer;transition:background .2s}
+        .context-menu-item:hover{background:rgba(0,247,255,.2)}
+
+        /* Modal extras for Export */
+        .modal-label{display:block;margin-bottom:8px;color:var(--primary)}
+        .modal-input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--primary);background:rgba(10,10,15,.7);color:var(--text);font-size:16px;outline:none}
+        .modal-input:focus{box-shadow:0 0 0 3px rgba(0,247,255,.25)}
+        .modal-actions{display:flex;gap:10px;justify-content:flex-end}
+        .btn-cancel{background:rgba(255,0,85,.2)!important;border-color:var(--danger)!important}
+        .btn-cancel:hover{background:rgba(255,0,85,.35)!important}
+
+        /* ===== CONTROLES DE ÁRBOLES ===== */
+        .tree-controls {
+            position: fixed;
+            top: 120px;
+            right: 20px;
+            background: rgba(26, 26, 46, 0.95);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 1000;
+            box-shadow: 0 0 20px rgba(0, 247, 255, 0.3);
+            backdrop-filter: blur(10px);
+            min-width: 200px;
+        }
+
+        .tree-controls-header {
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 12px;
+            text-align: center;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(0, 247, 255, 0.3);
+            padding-bottom: 8px;
+        }
+
+        .tree-controls-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .tree-control-btn {
+            background: rgba(0, 247, 255, 0.15);
+            border: 1px solid var(--primary);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tree-control-btn:hover {
+            background: rgba(0, 247, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .tree-control-btn.active {
+            background: rgba(0, 247, 255, 0.35);
+            box-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+        }
+
+        /* Estilos adicionales para árbol de expansión mínima */
+        .edge-path.mst {
+            stroke: #00ff00 !important;
+            stroke-width: 5 !important;
+            filter: drop-shadow(0 0 8px #00ff00) !important;
+            animation: pulse-mst 2s infinite;
+        }
+
+        @keyframes pulse-mst {
+            0% { stroke-width: 5; }
+            50% { stroke-width: 6; }
+            100% { stroke-width: 5; }
+        }
+
+        .edge-path.critical {
+            stroke: #ff0055 !important;
+            stroke-width: 4 !important;
+            filter: drop-shadow(0 0 6px #ff0055) !important;
+        }
+
+        /* ===== MEJORAS PARA LA AYUDA ===== */
+        .help-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 247, 255, 0.2);
+        }
+
+        .help-section:last-child {
+            border-bottom: none;
+        }
+
+        .help-subsection {
+            margin: 15px 0;
+            padding-left: 15px;
+            border-left: 2px solid rgba(0, 247, 255, 0.3);
+        }
+
+        .help-subsection h4 {
+            color: var(--secondary);
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .help-body p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .help-body ul ul {
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+
+        .help-body li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        /* ===== NOTIFICACIONES DE MODO ===== */
+        .mode-notification {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(26, 26, 46, 0.95);
+            border: 1px solid var(--primary);
+            color: var(--text);
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 2000;
+            box-shadow: 0 0 20px rgba(0, 247, 255, 0.4);
+            font-weight: bold;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* ===== RESULTADOS DE ÁRBOLES ===== */
+        .tree-results {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(26, 26, 46, 0.95);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 1000;
+            box-shadow: 0 0 20px rgba(0, 247, 255, 0.3);
+            backdrop-filter: blur(10px);
+            min-width: 250px;
+            max-width: 400px;
+        }
+
+        .tree-results-header {
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 12px;
+            text-align: center;
+            font-size: 16px;
+            border-bottom: 1px solid rgba(0, 247, 255, 0.3);
+            padding-bottom: 8px;
+        }
+
+        .tree-results-content {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .tree-result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px 0;
+            border-bottom: 1px dashed rgba(0, 247, 255, 0.1);
+        }
+
+        .tree-result-value {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .tree-result-total {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px solid var(--primary);
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /* ===== ESTILOS PARA ALGORITMOS ===== */
+        .algorithm-steps {
+            position: fixed;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(26, 26, 46, 0.95);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 1000;
+            box-shadow: 0 0 20px rgba(0, 247, 255, 0.3);
+            backdrop-filter: blur(10px);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .algorithm-steps-header {
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 12px;
+            text-align: center;
+            font-size: 16px;
+            border-bottom: 1px solid rgba(0, 247, 255, 0.3);
+            padding-bottom: 8px;
+        }
+
+        .algorithm-step {
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            background: rgba(0, 247, 255, 0.1);
+            border-left: 3px solid var(--primary);
+        }
+
+        .algorithm-step.active {
+            background: rgba(0, 247, 255, 0.2);
+            border-left: 3px solid var(--secondary);
+            box-shadow: 0 0 10px rgba(0, 247, 255, 0.3);
+        }
+
+        .step-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .step-btn {
+            background: rgba(0, 247, 255, 0.2);
+            border: 1px solid var(--primary);
+            color: var(--text);
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .step-btn:hover {
+            background: rgba(0, 247, 255, 0.3);
+        }
+
+        .step-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra superior -->
+    <div class="topbar">
+        <div class="tabs">
+            <button class="tab-btn" id="addNodeBtn">
+                <span>➕</span> Agregar Nodo
+            </button>
+            <button class="tab-btn" id="addEdgeBtn">
+                <span>🔗</span> Agregar Arista
+            </button>
+            <button class="tab-btn" id="clearBtn">
+                <span>🗑️</span> Limpiar
+            </button>
+        </div>
+        
+        <div class="right-controls">
+            <div class="dropdown">
+                <button class="dropdown-toggle" id="algorithmsBtn">
+                    <span>⚙️</span> Algoritmos
+                </button>
+                <div class="dropdown-menu">
+                    <button class="dropdown-item" id="kruskalBtn">Algoritmo de Kruskal</button>
+                    <button class="dropdown-item" id="primBtn">Algoritmo de Prim</button>
+                    <div class="dropdown-row">
+                        <span class="dropdown-label">Color MST:</span>
+                        <input type="color" id="mstColor" value="#00ff00">
+                    </div>
+                </div>
+            </div>
+            
+            <button class="tab-btn" id="helpBtn">
+                <span>❓</span> Ayuda
+            </button>
+        </div>
+    </div>
+
+    <!-- Título -->
+    <div class="title">Algoritmos de Árboles de Expansión Mínima</div>
+
+    <!-- Contenedor principal -->
+    <div class="container">
+        <div id="canvas">
+            <div class="grid"></div>
+            <!-- SVG para las aristas -->
+            <svg class="svg-container" id="edges-svg">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" class="arrow-marker"/>
+                    </marker>
+                </defs>
+            </svg>
+            <!-- Los nodos se agregarán dinámicamente aquí -->
+        </div>
+    </div>
+
+    <!-- Controles de árboles -->
+    <div class="tree-controls">
+        <div class="tree-controls-header">Controles de Árbol</div>
+        <div class="tree-controls-buttons">
+            <button class="tree-control-btn" id="autoGenerateBtn">
+                <span>🎲</span> Generar Grafo Aleatorio
+            </button>
+            <button class="tree-control-btn" id="showWeightsBtn">
+                <span>🔢</span> Mostrar Pesos
+            </button>
+            <button class="tree-control-btn" id="stepByStepBtn">
+                <span>⏯️</span> Ejecutar Paso a Paso
+            </button>
+        </div>
+    </div>
+
+    <!-- Resultados del árbol -->
+    <div class="tree-results hidden" id="treeResults">
+        <div class="tree-results-header">Resultados del Árbol</div>
+        <div class="tree-results-content">
+            <div class="tree-result-item">
+                <span>Algoritmo:</span>
+                <span class="tree-result-value" id="algorithmName">-</span>
+            </div>
+            <div class="tree-result-item">
+                <span>Peso Total:</span>
+                <span class="tree-result-value" id="totalWeight">0</span>
+            </div>
+            <div class="tree-result-item">
+                <span>Nodos:</span>
+                <span class="tree-result-value" id="nodeCount">0</span>
+            </div>
+            <div class="tree-result-item">
+                <span>Aristas:</span>
+                <span class="tree-result-value" id="edgeCount">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pasos del algoritmo -->
+    <div class="algorithm-steps hidden" id="algorithmSteps">
+        <div class="algorithm-steps-header">Pasos del Algoritmo</div>
+        <div id="stepsContainer"></div>
+        <div class="step-controls">
+            <button class="step-btn" id="prevStepBtn" disabled>Anterior</button>
+            <button class="step-btn" id="nextStepBtn">Siguiente</button>
+            <button class="step-btn" id="finishBtn">Finalizar</button>
+        </div>
+    </div>
+
+    <!-- Modal de ayuda -->
+    <div class="help-modal" id="helpModal">
+        <div class="help-content">
+            <div class="help-header">
+                <h2 class="help-title">Ayuda - Algoritmos de Árboles</h2>
+                <button class="help-close" id="closeHelpBtn">&times;</button>
+            </div>
+            <div class="help-body">
+                <div class="help-section">
+                    <h3>¿Qué son los Árboles de Expansión Mínima?</h3>
+                    <p>Un árbol de expansión mínima (MST) es un subconjunto de las aristas de un grafo conectado, no dirigido y ponderado, que conecta todos los vértices sin ciclos y con el peso total mínimo posible.</p>
+                </div>
+                
+                <div class="help-section">
+                    <h3>Algoritmos Disponibles</h3>
+                    <div class="help-subsection">
+                        <h4>Algoritmo de Kruskal</h4>
+                        <ul>
+                            <li>Ordena todas las aristas por peso de menor a mayor</li>
+                            <li>Agrega aristas al árbol si no forman ciclos</li>
+                            <li>Utiliza estructura de datos Union-Find</li>
+                            <li>Complejidad: O(E log V)</li>
+                        </ul>
+                    </div>
+                    <div class="help-subsection">
+                        <h4>Algoritmo de Prim</h4>
+                        <ul>
+                            <li>Comienza desde un nodo arbitrario</li>
+                            <li>En cada paso, agrega la arista de menor peso que conecta el árbol con un nodo externo</li>
+                            <li>Utiliza una cola de prioridad</li>
+                            <li>Complejidad: O(E + V log V)</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="help-section">
+                    <h3>Instrucciones de Uso</h3>
+                    <ul>
+                        <li><strong>Agregar Nodo:</strong> Haz clic en cualquier lugar del canvas</li>
+                        <li><strong>Agregar Arista:</strong> Selecciona dos nodos haciendo clic en ellos</li>
+                        <li><strong>Peso de Arista:</strong> Haz doble clic en una arista para editar su peso</li>
+                        <li><strong>Ejecutar Algoritmo:</strong> Selecciona un algoritmo del menú desplegable</li>
+                        <li><strong>Paso a Paso:</strong> Usa los controles para seguir el algoritmo paso a paso</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="help-footer">
+                <button class="help-footer-btn" id="closeHelpFooterBtn">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banner inferior -->
+    <div class="bottom-banner">
+        Haz clic en el canvas para agregar nodos • Selecciona dos nodos para crear una arista
+    </div>
+
+    <script>
+        // Estado de la aplicación
+        const state = {
+            nodes: [],
+            edges: [],
+            selectedNodes: [],
+            isAddingEdge: false,
+            currentNodeId: 1,
+            currentEdgeId: 1,
+            algorithm: null,
+            mstEdges: [],
+            stepIndex: 0,
+            algorithmSteps: []
+        };
+
+        // Referencias a elementos DOM
+        const canvas = document.getElementById('canvas');
+        const edgesSvg = document.getElementById('edges-svg');
+        const treeResults = document.getElementById('treeResults');
+        const algorithmSteps = document.getElementById('algorithmSteps');
+        const helpModal = document.getElementById('helpModal');
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', init);
+
+        function init() {
+            setupEventListeners();
+            createSampleGraph();
+        }
+
+        function setupEventListeners() {
+            // Botones de la barra superior
+            document.getElementById('addNodeBtn').addEventListener('click', () => {
+                state.isAddingEdge = false;
+                showNotification('Modo: Agregar Nodos - Haz clic en el canvas');
+            });
+
+            document.getElementById('addEdgeBtn').addEventListener('click', () => {
+                state.isAddingEdge = true;
+                showNotification('Modo: Agregar Aristas - Selecciona dos nodos');
+            });
+
+            document.getElementById('clearBtn').addEventListener('click', clearCanvas);
+
+            // Botones de algoritmos
+            document.getElementById('kruskalBtn').addEventListener('click', () => runKruskal());
+            document.getElementById('primBtn').addEventListener('click', () => runPrim());
+
+            // Botones de controles de árbol
+            document.getElementById('autoGenerateBtn').addEventListener('click', generateRandomGraph);
+            document.getElementById('showWeightsBtn').addEventListener('click', toggleWeights);
+            document.getElementById('stepByStepBtn').addEventListener('click', toggleStepByStep);
+
+            // Botones de ayuda
+            document.getElementById('helpBtn').addEventListener('click', () => helpModal.style.display = 'block');
+            document.getElementById('closeHelpBtn').addEventListener('click', () => helpModal.style.display = 'none');
+            document.getElementById('closeHelpFooterBtn').addEventListener('click', () => helpModal.style.display = 'none');
+
+            // Botones de pasos del algoritmo
+            document.getElementById('prevStepBtn').addEventListener('click', previousStep);
+            document.getElementById('nextStepBtn').addEventListener('click', nextStep);
+            document.getElementById('finishBtn').addEventListener('click', finishAlgorithm);
+
+            // Eventos del canvas
+            canvas.addEventListener('click', handleCanvasClick);
+            
+            // Cerrar modal de ayuda al hacer clic fuera
+            window.addEventListener('click', (e) => {
+                if (e.target === helpModal) {
+                    helpModal.style.display = 'none';
+                }
+            });
+        }
+
+        function handleCanvasClick(e) {
+            if (state.isAddingEdge) return; // En modo arista, no agregar nodos
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            createNode(x, y);
+        }
+
+        function createNode(x, y) {
+            const node = {
+                id: state.currentNodeId++,
+                x: x,
+                y: y,
+                label: `N${state.nodes.length + 1}`
+            };
+
+            state.nodes.push(node);
+            renderNode(node);
+            updateResults();
+        }
+
+        function renderNode(node) {
+            const nodeElement = document.createElement('div');
+            nodeElement.className = 'node';
+            nodeElement.id = `node-${node.id}`;
+            nodeElement.style.left = `${node.x - 25}px`;
+            nodeElement.style.top = `${node.y - 25}px`;
+            
+            nodeElement.innerHTML = `
+                <div class="node-label">${node.label}</div>
+                <div class="node-metrics">ID: ${node.id}</div>
+            `;
+
+            nodeElement.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleNodeClick(node.id);
+            });
+
+            // Hacer el nodo arrastrable
+            makeDraggable(nodeElement, node);
+
+            canvas.appendChild(nodeElement);
+        }
+
+        function makeDraggable(element, node) {
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            element.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                offsetX = e.clientX - element.getBoundingClientRect().left;
+                offsetY = e.clientY - element.getBoundingClientRect().top;
+                element.style.zIndex = '100';
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left - offsetX;
+                const y = e.clientY - rect.top - offsetY;
+
+                // Mantener el nodo dentro del canvas
+                const maxX = rect.width - 50;
+                const maxY = rect.height - 50;
+
+                node.x = Math.max(25, Math.min(maxX - 25, x + 25));
+                node.y = Math.max(25, Math.min(maxY - 25, y + 25));
+
+                element.style.left = `${node.x - 25}px`;
+                element.style.top = `${node.y - 25}px`;
+
+                updateEdges();
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                element.style.zIndex = '10';
+            });
+        }
+
+        function handleNodeClick(nodeId) {
+            if (!state.isAddingEdge) return;
+
+            state.selectedNodes.push(nodeId);
+
+            if (state.selectedNodes.length === 2) {
+                const [node1, node2] = state.selectedNodes;
+                
+                // Verificar si la arista ya existe
+                const existingEdge = state.edges.find(edge => 
+                    (edge.from === node1 && edge.to === node2) || 
+                    (edge.from === node2 && edge.to === node1)
+                );
+
+                if (!existingEdge && node1 !== node2) {
+                    createEdge(node1, node2);
+                }
+
+                state.selectedNodes = [];
+            }
+        }
+
+        function createEdge(fromId, toId, weight = Math.floor(Math.random() * 20) + 1) {
+            const edge = {
+                id: state.currentEdgeId++,
+                from: fromId,
+                to: toId,
+                weight: weight
+            };
+
+            state.edges.push(edge);
+            renderEdge(edge);
+            updateResults();
+        }
+
+        function renderEdge(edge) {
+            const fromNode = state.nodes.find(n => n.id === edge.from);
+            const toNode = state.nodes.find(n => n.id === edge.to);
+
+            if (!fromNode || !toNode) return;
+
+            // Crear elemento SVG para la arista
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.id = `edge-${edge.id}`;
+            path.className = 'edge-path';
+            path.setAttribute('marker-end', 'url(#arrowhead)');
+            
+            // Crear etiqueta de peso
+            const label = document.createElement('div');
+            label.className = 'edge-label';
+            label.id = `edge-label-${edge.id}`;
+            label.textContent = edge.weight;
+            
+            // Hacer la etiqueta editable
+            label.addEventListener('dblclick', () => {
+                const newWeight = prompt('Ingresa el nuevo peso:', edge.weight);
+                if (newWeight && !isNaN(newWeight)) {
+                    edge.weight = parseInt(newWeight);
+                    label.textContent = edge.weight;
+                    updateResults();
+                }
+            });
+
+            updateEdgePosition(edge, path, label);
+            edgesSvg.appendChild(path);
+            canvas.appendChild(label);
+        }
+
+        function updateEdges() {
+            state.edges.forEach(edge => {
+                const path = document.getElementById(`edge-${edge.id}`);
+                const label = document.getElementById(`edge-label-${edge.id}`);
+                
+                if (path && label) {
+                    updateEdgePosition(edge, path, label);
+                }
+            });
+        }
+
+        function updateEdgePosition(edge, path, label) {
+            const fromNode = state.nodes.find(n => n.id === edge.from);
+            const toNode = state.nodes.find(n => n.id === edge.to);
+
+            if (!fromNode || !toNode) return;
+
+            // Calcular ángulo y distancia entre nodos
+            const dx = toNode.x - fromNode.x;
+            const dy = toNode.y - fromNode.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx);
+
+            // Ajustar puntos de inicio y fin para que terminen en el borde de los nodos
+            const nodeRadius = 25;
+            const startX = fromNode.x + Math.cos(angle) * nodeRadius;
+            const startY = fromNode.y + Math.sin(angle) * nodeRadius;
+            const endX = toNode.x - Math.cos(angle) * nodeRadius;
+            const endY = toNode.y - Math.sin(angle) * nodeRadius;
+
+            // Crear camino curvo
+            const midX = (startX + endX) / 2;
+            const midY = (startY + endY) / 2;
+            
+            // Añadir curvatura para evitar superposiciones
+            const curvature = 20;
+            const controlX = midX + Math.sin(angle) * curvature;
+            const controlY = midY - Math.cos(angle) * curvature;
+
+            path.setAttribute('d', `M ${startX} ${startY} Q ${controlX} ${controlY} ${endX} ${endY}`);
+
+            // Posicionar etiqueta
+            label.style.left = `${controlX - 15}px`;
+            label.style.top = `${controlY - 15}px`;
+        }
+
+        function clearCanvas() {
+            state.nodes = [];
+            state.edges = [];
+            state.selectedNodes = [];
+            state.mstEdges = [];
+            state.currentNodeId = 1;
+            state.currentEdgeId = 1;
+            
+            // Limpiar elementos del DOM
+            document.querySelectorAll('.node').forEach(node => node.remove());
+            edgesSvg.innerHTML = `
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" class="arrow-marker"/>
+                    </marker>
+                </defs>
+            `;
+            document.querySelectorAll('.edge-label').forEach(label => label.remove());
+            
+            updateResults();
+            hideAlgorithmSteps();
+        }
+
+        function createSampleGraph() {
+            // Crear un grafo de ejemplo
+            const centerX = canvas.clientWidth / 2;
+            const centerY = canvas.clientHeight / 2;
+            const radius = 150;
+            
+            // Crear 6 nodos en un círculo
+            for (let i = 0; i < 6; i++) {
+                const angle = (i / 6) * 2 * Math.PI;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                createNode(x, y);
+            }
+            
+            // Crear algunas aristas de ejemplo
+            createEdge(1, 2, 4);
+            createEdge(1, 3, 1);
+            createEdge(2, 3, 2);
+            createEdge(2, 4, 5);
+            createEdge(3, 5, 3);
+            createEdge(4, 5, 2);
+            createEdge(4, 6, 1);
+            createEdge(5, 6, 6);
+        }
+
+        function generateRandomGraph() {
+            clearCanvas();
+            
+            const nodeCount = Math.floor(Math.random() * 8) + 4; // 4-11 nodos
+            const centerX = canvas.clientWidth / 2;
+            const centerY = canvas.clientHeight / 2;
+            const radius = Math.min(canvas.clientWidth, canvas.clientHeight) * 0.3;
+            
+            // Crear nodos en posiciones aleatorias
+            for (let i = 0; i < nodeCount; i++) {
+                const angle = Math.random() * 2 * Math.PI;
+                const distance = Math.random() * radius;
+                const x = centerX + distance * Math.cos(angle);
+                const y = centerY + distance * Math.sin(angle);
+                createNode(x, y);
+            }
+            
+            // Crear aristas aleatorias (aproximadamente 1.5 veces el número de nodos)
+            const edgeCount = Math.floor(nodeCount * 1.5);
+            for (let i = 0; i < edgeCount; i++) {
+                const fromId = Math.floor(Math.random() * nodeCount) + 1;
+                let toId = Math.floor(Math.random() * nodeCount) + 1;
+                
+                // Asegurar que fromId y toId sean diferentes
+                while (toId === fromId) {
+                    toId = Math.floor(Math.random() * nodeCount) + 1;
+                }
+                
+                // Verificar si la arista ya existe
+                const existingEdge = state.edges.find(edge => 
+                    (edge.from === fromId && edge.to === toId) || 
+                    (edge.from === toId && edge.to === fromId)
+                );
+                
+                if (!existingEdge) {
+                    createEdge(fromId, toId, Math.floor(Math.random() * 20) + 1);
+                }
+            }
+        }
+
+        function toggleWeights() {
+            const labels = document.querySelectorAll('.edge-label');
+            const isVisible = labels[0]?.style.display !== 'none';
+            
+            labels.forEach(label => {
+                label.style.display = isVisible ? 'none' : 'block';
+            });
+            
+            showNotification(isVisible ? 'Pesos ocultos' : 'Pesos visibles');
+        }
+
+        function toggleStepByStep() {
+            showNotification('Modo paso a paso activado - Selecciona un algoritmo');
+        }
+
+        function runKruskal() {
+            state.algorithm = 'kruskal';
+            state.mstEdges = [];
+            state.stepIndex = 0;
+            state.algorithmSteps = [];
+            
+            // Implementación del algoritmo de Kruskal
+            const edges = [...state.edges].sort((a, b) => a.weight - b.weight);
+            const parent = {};
+            const rank = {};
+            
+            // Inicializar estructura Union-Find
+            state.nodes.forEach(node => {
+                parent[node.id] = node.id;
+                rank[node.id] = 0;
+            });
+            
+            function find(node) {
+                if (parent[node] !== node) {
+                    parent[node] = find(parent[node]);
+                }
+                return parent[node];
+            }
+            
+            function union(node1, node2) {
+                const root1 = find(node1);
+                const root2 = find(node2);
+                
+                if (root1 !== root2) {
+                    if (rank[root1] > rank[root2]) {
+                        parent[root2] = root1;
+                    } else if (rank[root1] < rank[root2]) {
+                        parent[root1] = root2;
+                    } else {
+                        parent[root2] = root1;
+                        rank[root1]++;
+                    }
+                    return true;
+                }
+                return false;
+            }
+            
+            // Ejecutar algoritmo
+            for (const edge of edges) {
+                state.algorithmSteps.push({
+                    action: 'consider',
+                    edge: edge,
+                    message: `Considerando arista ${edge.from}-${edge.to} con peso ${edge.weight}`
+                });
+                
+                if (find(edge.from) !== find(edge.to)) {
+                    union(edge.from, edge.to);
+                    state.mstEdges.push(edge);
+                    
+                    state.algorithmSteps.push({
+                        action: 'add',
+                        edge: edge,
+                        message: `Arista ${edge.from}-${edge.to} agregada al MST`
+                    });
+                } else {
+                    state.algorithmSteps.push({
+                        action: 'skip',
+                        edge: edge,
+                        message: `Arista ${edge.from}-${edge.to} forma un ciclo - omitida`
+                    });
+                }
+                
+                if (state.mstEdges.length === state.nodes.length - 1) {
+                    break;
+                }
+            }
+            
+            showAlgorithmSteps();
+            updateResults();
+        }
+
+        function runPrim() {
+            state.algorithm = 'prim';
+            state.mstEdges = [];
+            state.stepIndex = 0;
+            state.algorithmSteps = [];
+            
+            // Implementación del algoritmo de Prim
+            const inMST = new Set();
+            const minEdge = {};
+            
+            // Inicializar
+            state.nodes.forEach(node => {
+                minEdge[node.id] = { weight: Infinity, edge: null };
+            });
+            
+            // Comenzar desde el primer nodo
+            const startNode = state.nodes[0].id;
+            minEdge[startNode].weight = 0;
+            inMST.add(startNode);
+            
+            state.algorithmSteps.push({
+                action: 'start',
+                node: startNode,
+                message: `Comenzando desde el nodo ${startNode}`
+            });
+            
+            // Actualizar aristas mínimas desde el nodo inicial
+            state.edges
+                .filter(edge => edge.from === startNode || edge.to === startNode)
+                .forEach(edge => {
+                    const otherNode = edge.from === startNode ? edge.to : edge.from;
+                    if (edge.weight < minEdge[otherNode].weight) {
+                        minEdge[otherNode] = { weight: edge.weight, edge: edge };
+                    }
+                });
+            
+            // Construir el MST
+            while (inMST.size < state.nodes.length) {
+                // Encontrar la arista mínima que conecta el MST con un nodo externo
+                let minWeight = Infinity;
+                let nextNode = null;
+                let nextEdge = null;
+                
+                state.nodes.forEach(node => {
+                    if (!inMST.has(node.id) && minEdge[node.id].weight < minWeight) {
+                        minWeight = minEdge[node.id].weight;
+                        nextNode = node.id;
+                        nextEdge = minEdge[node.id].edge;
+                    }
+                });
+                
+                if (nextNode === null) break;
+                
+                // Agregar el nodo y la arista al MST
+                inMST.add(nextNode);
+                state.mstEdges.push(nextEdge);
+                
+                state.algorithmSteps.push({
+                    action: 'add',
+                    edge: nextEdge,
+                    node: nextNode,
+                    message: `Agregando nodo ${nextNode} al MST mediante arista ${nextEdge.from}-${nextEdge.to}`
+                });
+                
+                // Actualizar aristas mínimas
+                state.edges
+                    .filter(edge => 
+                        (edge.from === nextNode && !inMST.has(edge.to)) ||
+                        (edge.to === nextNode && !inMST.has(edge.from))
+                    )
+                    .forEach(edge => {
+                        const otherNode = edge.from === nextNode ? edge.to : edge.from;
+                        if (edge.weight < minEdge[otherNode].weight) {
+                            minEdge[otherNode] = { weight: edge.weight, edge: edge };
+                        }
+                    });
+            }
+            
+            showAlgorithmSteps();
+            updateResults();
+        }
+
+        function showAlgorithmSteps() {
+            algorithmSteps.classList.remove('hidden');
+            renderCurrentStep();
+        }
+
+        function hideAlgorithmSteps() {
+            algorithmSteps.classList.add('hidden');
+        }
+
+        function renderCurrentStep() {
+            const stepsContainer = document.getElementById('stepsContainer');
+            stepsContainer.innerHTML = '';
+            
+            // Mostrar solo el paso actual
+            if (state.stepIndex < state.algorithmSteps.length) {
+                const step = state.algorithmSteps[state.stepIndex];
+                const stepElement = document.createElement('div');
+                stepElement.className = 'algorithm-step active';
+                stepElement.textContent = step.message;
+                stepsContainer.appendChild(stepElement);
+            }
+            
+            // Actualizar estado de los botones
+            document.getElementById('prevStepBtn').disabled = state.stepIndex === 0;
+            document.getElementById('nextStepBtn').disabled = state.stepIndex >= state.algorithmSteps.length;
+            
+            // Resaltar aristas del MST
+            highlightMSTEdges();
+        }
+
+        function previousStep() {
+            if (state.stepIndex > 0) {
+                state.stepIndex--;
+                renderCurrentStep();
+            }
+        }
+
+        function nextStep() {
+            if (state.stepIndex < state.algorithmSteps.length) {
+                state.stepIndex++;
+                renderCurrentStep();
+            }
+        }
+
+        function finishAlgorithm() {
+            state.stepIndex = state.algorithmSteps.length;
+            renderCurrentStep();
+            showNotification(`Algoritmo ${state.algorithm} completado`);
+        }
+
+        function highlightMSTEdges() {
+            // Resetear todas las aristas
+            document.querySelectorAll('.edge-path').forEach(path => {
+                path.classList.remove('mst');
+            });
+            
+            // Resaltar aristas del MST hasta el paso actual
+            const currentMSTEdges = [];
+            for (let i = 0; i <= state.stepIndex; i++) {
+                const step = state.algorithmSteps[i];
+                if (step.action === 'add') {
+                    currentMSTEdges.push(step.edge);
+                }
+            }
+            
+            currentMSTEdges.forEach(edge => {
+                const path = document.getElementById(`edge-${edge.id}`);
+                if (path) {
+                    path.classList.add('mst');
+                }
+            });
+        }
+
+        function updateResults() {
+            treeResults.classList.remove('hidden');
+            
+            document.getElementById('algorithmName').textContent = state.algorithm ? 
+                state.algorithm.charAt(0).toUpperCase() + state.algorithm.slice(1) : '-';
+            
+            document.getElementById('nodeCount').textContent = state.nodes.length;
+            document.getElementById('edgeCount').textContent = state.edges.length;
+            
+            // Calcular peso total del MST
+            const totalWeight = state.mstEdges.reduce((sum, edge) => sum + edge.weight, 0);
+            document.getElementById('totalWeight').textContent = totalWeight;
+        }
+
+        function showNotification(message) {
+            // Crear notificación temporal
+            const notification = document.createElement('div');
+            notification.className = 'mode-notification';
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Remover después de 3 segundos
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
