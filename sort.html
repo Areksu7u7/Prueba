@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ventana 2</title>
+    <link rel="stylesheet" href="sort.css">
+</head>
+<body>
+    <h1>Visualizador de Algoritmos de Ordenamiento</h1>
+    <div class="controls">
+        <label for="numValues">Cantidad de globos:</label>
+        <input type="number" id="numValues" min="5" max="150" value="20">
+        <button id="randomBtn">🎲 Generar</button>
+        <button id="bubbleBtn">Bubble Sort</button>
+        <button id="insertionBtn">Insertion Sort</button>
+        <button id="shellBtn">Shell Sort</button>
+        <button id="mergeBtn">Merge Sort</button>
+        <button id="selectionBtn">Selection Sort</button>
+    </div>
+    <div class="bubbles" id="bubbles"></div>
+    <div id="algoName"></div>
+    <script src="sort.js"></script>
+</body>
+</html>
