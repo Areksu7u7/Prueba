@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayuda - Editor de Grafos</title>
+    <style>
+        :root {
+            --primary: #00f7ff;
+            --secondary: #ff00e6;
+            --background: #0a0a0f;
+            --surface: #1a1a2e;
+            --text: #e0e0ff;
+            --accent: #7f00ff;
+            --danger: #ff0055;
+            --success: #00ff88;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .help-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .help-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(26, 26, 46, 0.8);
+            border-radius: 15px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 30px rgba(0, 247, 255, 0.3);
+        }
+        
+        .help-title {
+            font-size: 36px;
+            color: var(--primary);
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px var(--primary);
+        }
+        
+        .help-subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .help-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+        
+        .help-tab {
+            background: rgba(0, 247, 255, 0.1);
+            border: 1px solid var(--primary);
+            color: var(--text);
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .help-tab:hover {
+            background: rgba(0, 247, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .help-tab.active {
+            background: rgba(0, 247, 255, 0.3);
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.4);
+        }
+        
+        .help-tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .help-tab-content.active {
+            display: block;
+        }
+        
+        .help-section {
+            background: rgba(26, 26, 46, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 247, 255, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .section-title {
+            color: var(--primary);
+            font-size: 24px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(0, 247, 255, 0.3);
+        }
+        
+        .section-subtitle {
+            color: var(--secondary);
+            font-size: 20px;
+            margin: 25px 0 15px;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .feature-card {
+            background: rgba(10, 10, 15, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(0, 247, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 247, 255, 0.2);
+        }
+        
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .feature-title {
+            color: var(--primary);
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .interaction-demo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .demo-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0, 247, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 247, 255, 0.2);
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .demo-icon {
+            font-size: 24px;
+            background: rgba(0, 247, 255, 0.2);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .demo-text {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .demo-text strong {
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .algorithm-card {
+            background: rgba(0, 247, 255, 0.05);
+            border: 1px solid rgba(0, 247, 255, 0.2);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .algorithm-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            background: rgba(0, 247, 255, 0.1);
+            border-bottom: 1px solid rgba(0, 247, 255, 0.2);
+        }
+        
+        .algorithm-icon {
+            font-size: 24px;
+        }
+        
+        .algorithm-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .algorithm-content {
+            padding: 20px;
+        }
+        
+        .algorithm-steps {
+            margin: 15px 0;
+        }
+        
+        .step {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .step-number {
+            background: var(--primary);
+            color: var(--background);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-title {
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .workflow-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 25px 0;
+        }
+        
+        .workflow-step {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        
+        .workflow-number {
+            background: var(--primary);
+            color: var(--background);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .workflow-content h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .tips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .tip-category {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0, 247, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 247, 255, 0.2);
+        }
+        
+        .tip-category h4 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 247, 255, 0.3);
+            padding-bottom: 10px;
+        }
+        
+        .tip-list {
+            list-style-type: none;
+        }
+        
+        .tip-list li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .tip-list li:before {
+            content: "💡";
+            position: absolute;
+            left: 0;
+        }
+        
+        .restrictions {
+            background: rgba(255, 0, 85, 0.1);
+            border: 1px solid rgba(255, 0, 85, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .restrictions h4 {
+            color: var(--danger);
+            margin-bottom: 15px;
+        }
+        
+        .path-visualization {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .path-example {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .path-color {
+            width: 25px;
+            height: 5px;
+            border-radius: 3px;
+        }
+        
+        .path-example.critical .path-color {
+            background: #ff0055;
+        }
+        
+        .path-example.optimal .path-color {
+            background: #00ff00;
+        }
+        
+        .critical-text {
+            color: #ff0055;
+        }
+        
+        .optimal-text {
+            color: #00ff00;
+        }
+        
+        .quick-search-tips {
+            background: rgba(0, 247, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 247, 255, 0.2);
+            margin: 20px 0;
+        }
+        
+        .search-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .search-tag {
+            background: rgba(0, 247, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .search-tag:hover {
+            background: rgba(0, 247, 255, 0.3);
+        }
+        
+        .help-footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 1px solid rgba(0, 247, 255, 0.2);
+        }
+        
+        .help-footer-btn {
+            padding: 12px 25px;
+            background: rgba(0, 247, 255, 0.2);
+            border: 1px solid var(--primary);
+            color: var(--text);
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .help-footer-btn:hover {
+            background: rgba(0, 247, 255, 0.4);
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.4);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .help-tabs {
+                flex-direction: column;
+            }
+            
+            .help-tab {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .interaction-demo {
+                flex-direction: column;
+            }
+            
+            .demo-item {
+                min-width: auto;
+            }
+            
+            .tips-container {
+                flex-direction: column;
+            }
+            
+            .tip-category {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="help-container">
+        <div class="help-header">
+            <h1 class="help-title">📚 Ayuda del Editor de Grafos</h1>
+            <p class="help-subtitle">Una guía completa para utilizar todas las funcionalidades del editor de grafos y algoritmos de análisis</p>
+        </div>
+        
+        <div class="help-tabs">
+            <button class="help-tab active" data-tab="basico">Conceptos Básicos</button>
+            <button class="help-tab" data-tab="interaccion">Interacción</button>
+            <button class="help-tab" data-tab="algoritmos">Algoritmos</button>
+            <button class="help-tab" data-tab="modos">Modos de Trabajo</button>
+            <button class="help-tab" data-tab="consejos">Consejos</button>
+        </div>
+        
+        <!-- Pestaña de Conceptos Básicos -->
+        <div class="help-tab-content active" id="basico">
+            <div class="help-section">
+                <h2 class="section-title">🎯 ¿Qué es un Grafo?</h2>
+                <p>Un grafo es una estructura matemática compuesta por:</p>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🔘</div>
+                        <h3 class="feature-title">Nodos (Vértices)</h3>
+                        <p>Puntos que representan entidades en el grafo. En esta aplicación, puedes crear nodos haciendo clic en el área de trabajo.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">➰</div>
+                        <h3 class="feature-title">Aristas (Conexiones)</h3>
+                        <p>Líneas que conectan los nodos, representando relaciones entre ellos. Pueden ser dirigidas (con flecha) o no dirigidas.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚖️</div>
+                        <h3 class="feature-title">Pesos</h3>
+                        <p>Valores numéricos asignados a las aristas que representan costos, distancias, tiempos u otras métricas.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="help-section">
+                <h2 class="section-title">🛠️ Funcionalidades Principales</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎨</div>
+                        <h3 class="feature-title">Personalización Visual</h3>
+                        <p>Cambia colores de nodos y aristas para una mejor visualización y organización de tu grafo.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💾</div>
+                        <h3 class="feature-title">Guardar y Cargar</h3>
+                        <p>Exporta tus grafos a archivos JSON para guardar tu trabajo y cargarlo posteriormente.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔢</div>
+                        <h3 class="feature-title">Matriz de Adyacencia</h3>
+                        <p>Visualiza y edita tu grafo mediante una matriz que muestra todas las conexiones entre nodos.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3 class="feature-title">Análisis Avanzado</h3>
+                        <p>Aplica algoritmos como Johnson para encontrar rutas críticas y optimizar tu grafo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pestaña de Interacción -->
+        <div class="help-tab-content" id="interaccion">
+            <div class="help-section">
+                <h2 class="section-title">👆 Cómo Interactuar con el Grafo</h2>
+                
+                <h3 class="section-subtitle">Creación de Elementos</h3>
+                <div class="interaction-demo">
+                    <div class="demo-item">
+                        <div class="demo-icon">➕</div>
+                        <div class="demo-text">
+                            <strong>Agregar Nodo</strong>
+                            <span>Haz clic en cualquier área vacía del lienzo</span>
+                        </div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="demo-icon">🖱️</div>
+                        <div class="demo-text">
+                            <strong>Seleccionar Nodo</strong>
+                            <span>Clic en un nodo para seleccionarlo</span>
+                        </div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="demo-icon">🖱️🖱️</div>
+                        <div class="demo-text">
+                            <strong>Conectar Nodos</strong>
+                            <span>Doble clic en un nodo, luego en otro para crear arista</span>
+                        </div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="demo-icon">📝</div>
+                        <div class="demo-text">
+                            <strong>Editar Peso</strong>
+                            <span>Doble clic en la etiqueta de una arista</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="section-subtitle">Gestión de Elementos</h3>
+                <div class="interaction-demo">
+                    <div class="demo-item">
+                        <div class="demo-icon">👆</div>
+                        <div class="demo-text">
+                            <strong>Mover Nodos</strong>
+                            <span>Arrastra y suelta los nodos</span>
+                        </div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="demo-icon">🔄</div>
+                        <div class="demo-text">
+                            <strong>Cambiar Dirección</strong>
+                            <span>Menú contextual en aristas (clic derecho)</span>
+                        </div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="demo-icon">🗑️</div>
+                        <div class="demo-text">
+                            <strong>Eliminar Elementos</strong>
+                            <span>Menú contextual (clic derecho)</span>
+                        </div>
+                    </div>
+                    <div class="demo-item">
+                        <div class="demo-icon">🌀</div>
+                        <div class="demo-text">
+                            <strong>Crear Bucles</strong>
+                            <span>Menú contextual en nodos (solo en modo normal)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="help-section">
+                <h2 class="section-title">🎛️ Controles de la Interfaz</h2>
+                
+                <h3 class="section-subtitle">Barra Superior</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3 class="feature-title">🔄 Modo: Normal/Johnson</h3>
+                        <p>Alterna entre el modo normal (todas las operaciones permitidas) y el modo Johnson (sin bucles ni aristas bidireccionales).</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="feature-title">🧮 Modo: Asignación</h3>
+                        <p>Activa el modo que permite pesos negativos en las aristas para problemas de asignación.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="feature-title">🧹 Limpiar Grafo</h3>
+                        <p>Elimina todos los nodos y aristas del lienzo para comenzar desde cero.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="feature-title">🔢 Matriz</h3>
+                        <p>Abre una ventana con la matriz de adyacencia para editar pesos directamente.</p>
+                    </div>
+                </div>
+                
+                <h3 class="section-subtitle">Menús Desplegables</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3 class="feature-title">🎨 Colores</h3>
+                        <p>Personaliza los colores de nodos y aristas para una mejor visualización.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="feature-title">Arista: Dirigida/No Dirigida</h3>
+                        <p>Define si las nuevas conexiones tendrán dirección (flechas) o serán bidireccionales.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="feature-title">⚡ Análisis</h3>
+                        <p>Accede a algoritmos avanzados como Johnson y problemas de asignación.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pestaña de Algoritmos -->
+        <div class="help-tab-content" id="algoritmos">
+            <div class="help-section">
+                <h2 class="section-title">🔍 Algoritmo Johnson</h2>
+                
+                <div class="algorithm-card">
+                    <div class="algorithm-header">
+                        <div class="algorithm-icon">⚡</div>
+                        <div class="algorithm-title">Maximizar/Minimizar (Johnson)</div>
+                    </div>
+                    <div class="algorithm-content">
+                        <p>El algoritmo Johnson encuentra las rutas más cortas entre todos los pares de nodos en un grafo dirigido ponderado. En esta aplicación se utiliza para:</p>
+                        
+                        <div class="algorithm-steps">
+                            <div class="step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <div class="step-title">Ruta Crítica (Maximizar)</div>
+                                    <p>Encuentra el camino más largo en el grafo, útil para planificación de proyectos.</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <div class="step-title">Ruta Óptima (Minimizar)</div>
+                                    <p>Encuentra el camino más corto entre nodos seleccionados.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="path-visualization">
+                            <div class="path-example critical">
+                                <div class="path-color"></div>
+                                <div class="path-text"><span class="critical-text">Ruta Crítica (Rojo)</span> - Camino más largo</div>
+                            </div>
+                            <div class="path-example optimal">
+                                <div class="path-color"></div>
+                                <div class="path-text"><span class="optimal-text">Ruta Óptima (Verde)</span> - Camino más corto</div>
+                            </div>
+                        </div>
+                        
+                        <div class="restrictions">
+                            <h4>⚠️ Restricciones del Modo Johnson</h4>
+                            <p>Cuando activas el modo Johnson, el grafo debe cumplir:</p>
+                            <ul class="tip-list">
+                                <li>No pueden existir bucles (conexiones de un nodo a sí mismo)</li>
+                                <li>No pueden existir aristas en ambas direcciones entre el mismo par de nodos</li>
+                                <li>El algoritmo se activa automáticamente al aplicar el análisis</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="help-section">
+                <h2 class="section-title">🧮 Algoritmos de Asignación</h2>
+                
+                <div class="algorithm-card">
+                    <div class="algorithm-header">
+                        <div class="algorithm-icon">📊</div>
+                        <div class="algorithm-title">Problema de Asignación</div>
+                    </div>
+                    <div class="algorithm-content">
+                        <p>Resuelve problemas donde necesitas asignar recursos (filas) a tareas (columnas) de manera óptima.</p>
+                        
+                        <div class="algorithm-steps">
+                            <div class="step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <div class="step-title">Maximizar</div>
+                                    <p>Encuentra la asignación que maximiza la suma total de beneficios.</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <div class="step-title">Minimizar</div>
+                                    <p>Encuentra la asignación que minimiza la suma total de costos.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="restrictions">
+                            <h4>💡 Modo Asignación</h4>
+                            <p>Para usar estos algoritmos, activa el "Modo: Asignación" que permite:</p>
+                            <ul class="tip-list">
+                                <li>Pesos negativos en las aristas</li>
+                                <li>Representación de costos y beneficios</li>
+                                <li>Asignación óptima entre conjuntos de nodos</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="help-section">
+                <h2 class="section-title">🚚 Algoritmo NorthWest (Transporte)</h2>
+                
+                <div class="algorithm-card">
+                    <div class="algorithm-header">
+                        <div class="algorithm-icon">🚛</div>
+                        <div class="algorithm-title">Problema de Transporte</div>
+                    </div>
+                    <div class="algorithm-content">
+                        <p>Resuelve problemas de distribución donde hay múltiples orígenes con oferta y destinos con demanda.</p>
+                        
+                        <div class="algorithm-steps">
+                            <div class="step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <div class="step-title">Configurar Tabla</div>
+                                    <p>Define costos de transporte, ofertas y demandas en la tabla interactiva.</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <div class="step-title">Esquina Noroeste</div>
+                                    <p>El algoritmo comienza con una solución inicial básica.</p>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <div class="step-title">Optimización MODI</div>
+                                    <p>Iterativamente mejora la solución hasta encontrar el óptimo.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="restrictions">
+                            <h4>📋 Características</h4>
+                            <ul class="tip-list">
+                                <li>Tabla dinámica editable con filas y columnas configurables</li>
+                                <li>Importar/exportar problemas en formato JSON y CSV</li>
+                                <li>Soporte para minimización y maximización</li>
+                                <li>Balanceo automático de oferta y demanda</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Ayuda Sort -->
+            <div class="help-section">
+                <h2 class="section-title">🔀 Algoritmos de Ordenamiento (Sort)</h2>
+                <div class="algorithm-card">
+                    <div class="algorithm-header">
+                        <div class="algorithm-icon">🔀</div>
+                        <div class="algorithm-title">Visualizador de Algoritmos de Ordenamiento</div>
+                    </div>
+                    <div class="algorithm-content">
+                        <p>En la ventana de Sort puedes visualizar y comparar en vivo los siguientes algoritmos de ordenamiento:</p>
+                        <ul class="tip-list">
+                            <li><strong>Bubble Sort:</strong> Ordena comparando e intercambiando burbujas adyacentes.</li>
+                            <li><strong>Insertion Sort:</strong> Inserta cada elemento en su posición correcta en la parte ordenada.</li>
+                            <li><strong>Shell Sort:</strong> Variante de insertion sort que compara elementos distantes.</li>
+                            <li><strong>Merge Sort:</strong> Divide y conquista, combinando subarreglos ordenados.</li>
+                            <li><strong>Selection Sort:</strong> Selecciona el menor y lo coloca en su lugar.</li>
+                        </ul>
+                        <p>Puedes elegir la cantidad de globos (valores) y ver cómo cada algoritmo los ordena visualmente. Si hay pocos valores, el tamaño de cada globo es proporcional a su valor; si hay muchos, todos los globos son iguales para mejor visualización.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ayuda NorthWest -->
+            <div class="help-section">
+                <h2 class="section-title">🚚 Algoritmo NorthWest (Esquina Noroeste)</h2>
+                <div class="algorithm-card">
+                    <div class="algorithm-header">
+                        <div class="algorithm-icon">🚚</div>
+                        <div class="algorithm-title">Método de la Esquina Noroeste</div>
+                    </div>
+                    <div class="algorithm-content">
+                        <p>El método NorthWest es una técnica para encontrar una solución inicial básica en problemas de transporte:</p>
+                        <ul class="tip-list">
+                            <li>Se comienza en la celda superior izquierda (noroeste) de la tabla de costos.</li>
+                            <li>Se asigna la mayor cantidad posible sin exceder la oferta o demanda.</li>
+                            <li>Se ajustan las cantidades y se avanza a la siguiente celda disponible (a la derecha o abajo).</li>
+                            <li>El proceso se repite hasta satisfacer todas las ofertas y demandas.</li>
+                        </ul>
+                        <p>Este método es rápido y sencillo, aunque no garantiza la solución óptima. Se suele usar como punto de partida para métodos de optimización como MODI.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pestaña de Modos de Trabajo -->
+        <div class="help-tab-content" id="modos">
+            <div class="help-section">
+                <h2 class="section-title">🔄 Modo Normal vs. Modo Johnson</h2>
+                
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3 class="feature-title">🔄 Modo Normal</h3>
+                        <p>Máxima flexibilidad para crear cualquier tipo de grafo:</p>
+                        <ul class="tip-list">
+                            <li>Bucles permitidos</li>
+                            <li>Aristas bidireccionales</li>
+                            <li>Pesos no negativos (a menos que actives modo asignación)</li>
+                            <li>Ideal para aprendizaje y experimentación</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="feature-title">⚡ Modo Johnson</h3>
+                        <p>Optimizado para análisis de rutas críticas:</p>
+                        <ul class="tip-list">
+                            <li>Sin bucles</li>
+                            <li>Sin aristas bidireccionales</li>
+                            <li>Estructura de grafo acíclico dirigido</li>
+                            <li>Requerido para el algoritmo Johnson</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="workflow-steps">
+                    <div class="workflow-step">
+                        <div class="workflow-number">1</div>
+                        <div class="workflow-content">
+                            <h4>Comienza en Modo Normal</h4>
+                            <p>Crea tu grafo inicial con todos los nodos y conexiones necesarias.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">2</div>
+                        <div class="workflow-content">
+                            <h4>Cambia a Modo Johnson</h4>
+                            <p>Al activar el modo Johnson, se eliminarán automáticamente bucles y aristas bidireccionales.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">3</div>
+                        <div class="workflow-content">
+                            <h4>Aplica Análisis</h4>
+                            <p>Ejecuta el algoritmo Johnson para encontrar rutas críticas y óptimas.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">4</div>
+                        <div class="workflow-content">
+                            <h4>Controla la Visualización</h4>
+                            <p>Usa los controles de rutas para mostrar/ocultar rutas críticas y óptimas.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="help-section">
+                <h2 class="section-title">🧮 Modo Asignación</h2>
+                
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3 class="feature-title">¿Cuándo Usarlo?</h3>
+                        <p>El modo asignación está diseñado específicamente para problemas donde necesitas:</p>
+                        <ul class="tip-list">
+                            <li>Asignar trabajadores a tareas</li>
+                            <li>Asignar máquinas a trabajos</li>
+                            <li>Optimizar recursos con costos/beneficios</li>
+                            <li>Trabajar con valores negativos (pérdidas)</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <h3 class="feature-title">Características</h3>
+                        <p>Al activar el modo asignación:</p>
+                        <ul class="tip-list">
+                            <li>Permite ingresar pesos negativos</li>
+                            <li>Desactiva temporalmente el modo Johnson</li>
+                            <li>Prepara el grafo para algoritmos de asignación</li>
+                            <li>Muestra resultados en tabla de asignación</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pestaña de Consejos -->
+        <div class="help-tab-content" id="consejos">
+            <div class="help-section">
+                <h2 class="section-title">💡 Consejos Prácticos</h2>
+                
+                <div class="tips-container">
+                    <div class="tip-category">
+                        <h4>🎯 Para Principiantes</h4>
+                        <ul class="tip-list">
+                            <li>Comienza con grafos pequeños para familiarizarte</li>
+                            <li>Usa colores diferentes para grupos de nodos relacionados</li>
+                            <li>Guarda tu trabajo frecuentemente</li>
+                            <li>Experimenta con diferentes tipos de aristas</li>
+                            <li>Utiliza la matriz para verificar conexiones</li>
+                        </ul>
+                    </div>
+                    <div class="tip-category">
+                        <h4>⚡ Para Análisis Avanzado</h4>
+                        <ul class="tip-list">
+                            <li>Planifica tu grafo antes de comenzar</li>
+                            <li>Usa nombres descriptivos para los nodos</li>
+                            <li>Verifica que los pesos reflejen correctamente tu problema</li>
+                            <li>Exporta resultados para documentación</li>
+                            <li>Utiliza los controles de rutas para comparar soluciones</li>
+                        </ul>
+                    </div>
+                    <div class="tip-category">
+                        <h4>🔧 Solución de Problemas</h4>
+                        <ul class="tip-list">
+                            <li>Si el algoritmo Johnson falla, verifica bucles y bidireccionales</li>
+                            <li>Para problemas de asignación, activa el modo correspondiente</li>
+                            <li>Usa "Limpiar Grafo" si experimentas comportamientos inesperados</li>
+                            <li>Verifica que todos los pesos sean numéricos</li>
+                            <li>En caso de errores, recarga la página y carga tu archivo guardado</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="help-section">
+                <h2 class="section-title">🚀 Flujo de Trabajo Recomendado</h2>
+                
+                <div class="workflow-steps">
+                    <div class="workflow-step">
+                        <div class="workflow-number">1</div>
+                        <div class="workflow-content">
+                            <h4>Planificación</h4>
+                            <p>Define qué quieres representar: ¿un proyecto? ¿una red? ¿un problema de asignación?</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">2</div>
+                        <div class="workflow-content">
+                            <h4>Construcción</h4>
+                            <p>Crea los nodos y conéctalos con aristas, asignando pesos significativos.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">3</div>
+                        <div class="workflow-content">
+                            <h4>Verificación</h4>
+                            <p>Revisa tu grafo usando la matriz de adyacencia y corrige errores.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">4</div>
+                        <div class="workflow-content">
+                            <h4>Análisis</h4>
+                            <p>Aplica los algoritmos correspondientes según tu objetivo.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">5</div>
+                        <div class="workflow-content">
+                            <h4>Interpretación</h4>
+                            <p>Analiza los resultados y ajusta tu modelo si es necesario.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">6</div>
+                        <div class="workflow-content">
+                            <h4>Documentación</h4>
+                            <p>Guarda tu trabajo y exporta resultados para presentaciones o informes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="help-section">
+                <h2 class="section-title">🔍 Búsqueda Rápida</h2>
+                
+                <div class="quick-search-tips">
+                    <p>Si necesitas encontrar información específica rápidamente, busca estos términos:</p>
+                    <div class="search-tags">
+                        <span class="search-tag">Johnson</span>
+                        <span class="search-tag">asignación</span>
+                        <span class="search-tag">matriz</span>
+                        <span class="search-tag">exportar</span>
+                        <span class="search-tag">colores</span>
+                        <span class="search-tag">rutas</span>
+                        <span class="search-tag">pesos</span>
+                        <span class="search-tag">nodos</span>
+                        <span class="search-tag">aristas</span>
+                        <span class="search-tag">NorthWest</span>
+                        <span class="search-tag">transporte</span>
+                        <span class="search-tag">modos</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="help-footer">
+            <button class="help-footer-btn" onclick="window.print()">🖨️ Imprimir esta Ayuda</button>
+        </div>
+    </div>
+
+    <script>
+        // Funcionalidad de pestañas
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.help-tab');
+            const tabContents = document.querySelectorAll('.help-tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remover clase active de todas las pestañas y contenidos
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Agregar clase active a la pestaña clickeada
+                    tab.classList.add('active');
+                    
+                    // Mostrar el contenido correspondiente
+                    const tabId = tab.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            // Efecto en etiquetas de búsqueda
+            const searchTags = document.querySelectorAll('.search-tag');
+            searchTags.forEach(tag => {
+                tag.addEventListener('click', function() {
+                    // Simular búsqueda - en una implementación real aquí iría la lógica de búsqueda
+                    alert(`Buscando: "${this.textContent}"`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
