@@ -1586,3 +1586,18 @@ body{background:var(--background);color:var(--text);overflow:hidden;height:100vh
         font-size: 20px;
     }
 }
+
+.redirect-btn {
+  padding: 12px 24px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.redirect-btn:hover {
+  background: #45a049;
+}
