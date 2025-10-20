@@ -1,24 +1,109 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Ventana 2</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Visualizador - Ordenamiento</title>
     <link rel="stylesheet" href="sort.css">
 </head>
 <body>
     <h1>Visualizador de Algoritmos de Ordenamiento</h1>
+
     <div class="controls">
         <label for="numValues">Cantidad de globos:</label>
-        <input type="number" id="numValues" min="5" max="150" value="20">
+        <input type="number" id="numValues" min="5" max="500" value="50">
         <button id="randomBtn">🎲 Generar</button>
         <button id="bubbleBtn">Bubble Sort</button>
+        <button id="selectionBtn">Selection Sort</button>
         <button id="insertionBtn">Insertion Sort</button>
         <button id="shellBtn">Shell Sort</button>
         <button id="mergeBtn">Merge Sort</button>
-        <button id="selectionBtn">Selection Sort</button>
+        <button id="helpBtn" style="background: linear-gradient(90deg, #9b59b6 60%, #e74c3c 100%);">❓ Ayuda</button>
     </div>
+
     <div class="bubbles" id="bubbles"></div>
     <div id="algoName"></div>
-    <script src="sort.js"></script>
+
+    <!-- Modal de Ayuda -->
+    <div id="helpModal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <span class="close" role="button" aria-label="Cerrar">&times;</span>
+            <h2>📚 Manual de Usuario - Visualizador de Ordenamiento</h2>
+            
+            <div class="help-section">
+                <h3>🎯 ¿Qué hace esta aplicación?</h3>
+                <p>Este visualizador te permite ver cómo funcionan diferentes algoritmos de ordenamiento de manera visual. Cada burbuja representa un número, y su <strong>tamaño indica su valor</strong>: burbujas más grandes = números más grandes.</p>
+            </div>
+
+            <div class="help-section">
+                <h3>🎮 Controles Básicos</h3>
+                <ul>
+                    <li><strong>Cantidad de globos:</strong> Escribe un número entre 5 y 500 para elegir cuántas burbujas ordenar.</li>
+                    <li><strong>🎲 Generar:</strong> Crea un nuevo conjunto de valores aleatorios sin repetir.</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3>🔍 Colores de las Burbujas</h3>
+                <ul>
+                    <li><span class="color-box" style="background: #00f7ff;">🔵 Azul:</span> Burbujas sin ordenar</li>
+                    <li><span class="color-box" style="background: #ffd700;">🟡 Amarillo/Naranja:</span> Burbuja activa (se está moviendo)</li>
+                    <li><span class="color-box" style="background: #ff4444;">🔴 Rojo:</span> Burbujas comparándose</li>
+                    <li><span class="color-box" style="background: #00ff88;">🟢 Verde:</span> Burbujas ya ordenadas</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3>🧮 Algoritmos de Ordenamiento</h3>
+                
+                <div class="algo-card">
+                    <h4>Bubble Sort (Burbuja)</h4>
+                    <p><strong>¿Cómo funciona?</strong> Compara parejas de burbujas vecinas y las intercambia si están en el orden incorrecto. Es como burbujas que suben a la superficie.</p>
+                    <p><strong>Velocidad:</strong> ⭐⭐ Lento (bueno para pocos datos)</p>
+                    <p><strong>Complejidad:</strong> O(n²)</p>
+                </div>
+
+                <div class="algo-card">
+                    <h4>Selection Sort (Selección)</h4>
+                    <p><strong>¿Cómo funciona?</strong> Busca el valor más pequeño y lo coloca al inicio, luego busca el siguiente más pequeño, y así sucesivamente.</p>
+                    <p><strong>Velocidad:</strong> ⭐⭐ Lento (sencillo pero ineficiente)</p>
+                    <p><strong>Complejidad:</strong> O(n²)</p>
+                </div>
+
+                <div class="algo-card">
+                    <h4>Insertion Sort (Inserción)</h4>
+                    <p><strong>¿Cómo funciona?</strong> Toma cada burbuja y la inserta en su posición correcta, como ordenar cartas en tu mano.</p>
+                    <p><strong>Velocidad:</strong> ⭐⭐⭐ Medio (rápido con datos casi ordenados)</p>
+                    <p><strong>Complejidad:</strong> O(n²)</p>
+                </div>
+
+                <div class="algo-card">
+                    <h4>Shell Sort</h4>
+                    <p><strong>¿Cómo funciona?</strong> Una versión mejorada de Insertion Sort que compara elementos lejanos primero, reduciendo el desorden rápidamente.</p>
+                    <p><strong>Velocidad:</strong> ⭐⭐⭐⭐ Rápido (mejor que los anteriores)</p>
+                    <p><strong>Complejidad:</strong> O(n log n)</p>
+                </div>
+
+                <div class="algo-card">
+                    <h4>Merge Sort (Mezcla)</h4>
+                    <p><strong>¿Cómo funciona?</strong> Divide las burbujas en grupos pequeños, los ordena y luego los combina. Es el más eficiente de todos.</p>
+                    <p><strong>Velocidad:</strong> ⭐⭐⭐⭐⭐ Muy rápido (ideal para muchos datos)</p>
+                    <p><strong>Complejidad:</strong> O(n log n)</p>
+                </div>
+            </div>
+
+            <div class="help-section">
+                <h3>💡 Consejos</h3>
+                <ul>
+                    <li>Empieza con <strong>20-30 burbujas</strong> para ver los algoritmos con claridad.</li>
+                    <li>Usa <strong>100+ burbujas</strong> para notar la diferencia de velocidad entre algoritmos.</li>
+                    <li>Los algoritmos O(n log n) como <strong>Merge Sort</strong> son mucho más rápidos con grandes cantidades.</li>
+                    <li>Si hay muchas burbujas, usa el <strong>scroll</strong> para verlas todas.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="sort.js" defer></script>
 </body>
 </html>
