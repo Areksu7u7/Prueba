@@ -1,481 +1,631 @@
-/* --- Reset y base --- */
-* {
-    box-sizing: border-box;
-}
+// Referencias a los elementos del DOM
+const bubblesDiv = document.getElementById('bubbles');
+const numInput = document.getElementById('numValues');
+const minInput = document.getElementById('minValue');
+const maxInput = document.getElementById('maxValue');
+const randomBtn = document.getElementById('randomBtn');
+const customBtn = document.getElementById('customBtn');
+const bubbleBtn = document.getElementById('bubbleBtn');
+const insertionBtn = document.getElementById('insertionBtn');
+const shellBtn = document.getElementById('shellBtn');
+const mergeBtn = document.getElementById('mergeBtn');
+const selectionBtn = document.getElementById('selectionBtn');
+const algoName = document.getElementById('algoName');
+const helpBtn = document.getElementById('helpBtn');
+const helpModal = document.getElementById('helpModal');
+const customModal = document.getElementById('customModal');
+const closeModal = document.querySelector('.close');
+const closeCustom = document.getElementById('closeCustom');
+const customNumbers = document.getElementById('customNumbers');
+const confirmCustom = document.getElementById('confirmCustom');
+const cancelCustom = document.getElementById('cancelCustom');
 
-html, body {
-    height: 100%;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-}
+let values = [];
+let sorting = false;
+let animationSpeed = 50;
+let bubbles = [];
+let operationsCount = 0;
 
-body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    background: linear-gradient(135deg, #181828 60%, #23234a 100%);
-    color: #fff;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    min-height: 100vh;
-}
-
-/* --- Título principal --- */
-h1 {
-    font-size: 2.2rem;
-    margin: 24px 0 10px 0;
-    color: #00f7ff;
-    text-shadow: 0 0 10px #00f7ff55;
-    text-align: center;
-}
-
-/* --- Controles superiores --- */
-.controls {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 18px;
-    padding: 0 20px;
-}
-
-.range-controls, .sort-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 10px;
-}
-
-.controls label {
-    font-size: 1rem;
-    color: #ffd700;
-}
-
-.controls input[type="number"] {
-    width: 70px;
-    padding: 6px;
-    border-radius: 8px;
-    border: 1px solid #00f7ff;
-    background: #23234a;
-    color: #fff;
-    font-size: 1rem;
-    text-align: center;
-    outline: none;
-    transition: border-color 0.2s ease;
-}
-
-.controls input[type="number"]:focus {
-    border-color: #ffd700;
-}
-
-/* --- Botones --- */
-.controls button {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: none;
-    background: linear-gradient(90deg, #00f7ff 60%, #ffd700 100%);
-    color: #222;
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 8px #00f7ff33;
-}
-
-.controls button:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px #00f7ff66;
-}
-
-.controls button:disabled {
-    background: #444;
-    color: #aaa;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
-}
-
-/* Botones específicos de algoritmos */
-#bubbleBtn { 
-    background: linear-gradient(90deg, #2196F3, #1976D2); 
-    box-shadow: 0 2px 8px #2196F333;
-}
-#bubbleBtn:hover:not(:disabled) {
-    box-shadow: 0 4px 12px #2196F366;
-}
-
-#selectionBtn { 
-    background: linear-gradient(90deg, #FF9800, #F57C00); 
-    box-shadow: 0 2px 8px #FF980033;
-}
-#selectionBtn:hover:not(:disabled) {
-    box-shadow: 0 4px 12px #FF980066;
-}
-
-#insertionBtn { 
-    background: linear-gradient(90deg, #9C27B0, #7B1FA2); 
-    box-shadow: 0 2px 8px #9C27B033;
-}
-#insertionBtn:hover:not(:disabled) {
-    box-shadow: 0 4px 12px #9C27B066;
-}
-
-#shellBtn { 
-    background: linear-gradient(90deg, #009688, #00796B); 
-    box-shadow: 0 2px 8px #00968833;
-}
-#shellBtn:hover:not(:disabled) {
-    box-shadow: 0 4px 12px #00968866;
-}
-
-#mergeBtn { 
-    background: linear-gradient(90deg, #f44336, #d32f2f); 
-    box-shadow: 0 2px 8px #f4433633;
-}
-#mergeBtn:hover:not(:disabled) {
-    box-shadow: 0 4px 12px #f4433666;
-}
-
-#helpBtn { 
-    background: linear-gradient(90deg, #9b59b6 60%, #e74c3c 100%); 
-    box-shadow: 0 2px 8px #9b59b633;
-}
-#helpBtn:hover:not(:disabled) {
-    box-shadow: 0 4px 12px #9b59b666;
-}
-
-#customBtn {
-    background: linear-gradient(90deg, #00ff88, #00cc66);
-    box-shadow: 0 2px 8px #00ff8833;
-}
-#customBtn:hover:not(:disabled) {
-    box-shadow: 0 4px 12px #00ff8866;
-}
-
-/* --- Contenedor de burbujas --- */
-.bubbles {
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 20px;
-    overflow-y: auto;
-    height: 65vh;
-    max-height: 65vh;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 14px;
-    align-content: flex-start;
-}
-
-/* --- Globos individuales --- */
-.bubble {
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #00f7ff, #0066ff);
-    color: #222;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s ease;
-    box-shadow:
-        0 4px 15px rgba(0, 247, 255, 0.3),
-        inset 0 2px 8px rgba(255, 255, 255, 0.2);
-    min-width: 50px;
-    min-height: 50px;
-    flex-shrink: 0;
-}
-
-/* --- Estados de animación --- */
-.bubble.active {
-    background: radial-gradient(circle at 30% 30%, #ffd700, #ff6b00);
-    box-shadow:
-        0 0 25px rgba(255, 215, 0, 0.8),
-        0 0 15px rgba(255, 107, 0, 0.6),
-        inset 0 2px 8px rgba(255, 255, 255, 0.3);
-    transform: scale(1.15);
-    border: 2px solid #fff;
-}
-
-.bubble.sorted {
-    background: radial-gradient(circle at 30% 30%, #00ff88, #00cc66);
-    border: 2px solid #00ff88;
-    box-shadow:
-        0 0 20px rgba(0, 255, 136, 0.6),
-        inset 0 2px 8px rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
-}
-
-.bubble.comparing {
-    background: radial-gradient(circle at 30% 30%, #ff4444, #cc0000);
-    box-shadow:
-        0 0 20px rgba(255, 68, 68, 0.6),
-        inset 0 2px 8px rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
-}
-
-/* --- Texto del algoritmo --- */
-#algoName {
-    margin-top: 18px;
-    font-size: 1.3rem;
-    color: #ffd700;
-    min-height: 30px;
-    text-align: center;
-    font-weight: bold;
-    letter-spacing: 1px;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-}
-
-/* --- Modal de Ayuda --- */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.8);
-    animation: fadeIn 0.3s;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.modal-content {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    margin: 3% auto;
-    padding: 30px;
-    border: 2px solid #00f7ff;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 800px;
-    max-height: 85vh;
-    overflow-y: auto;
-    box-shadow: 0 0 30px rgba(0, 247, 255, 0.5);
-    animation: slideDown 0.4s;
-}
-
-@keyframes slideDown {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
+// Generar valores únicos aleatorios con rango personalizado
+function randomValues(n, min = 1, max = 100) {
+    // Verificar que el rango sea válido
+    if (max - min + 1 < n) {
+        alert(`Error: El rango (${min}-${max}) debe ser al menos igual a la cantidad de burbujas (${n}).\nMáximo debe ser al menos ${min + n - 1}`);
+        maxInput.value = min + n - 1;
+        max = min + n - 1;
     }
-    to {
-        transform: translateY(0);
-        opacity: 1;
+    
+    const allNumbers = Array.from({ length: max - min + 1 }, (_, i) => i + min);
+    
+    // Mezclar usando Fisher-Yates
+    for (let i = allNumbers.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allNumbers[i], allNumbers[j]] = [allNumbers[j], allNumbers[i]];
+    }
+    
+    values = allNumbers.slice(0, n);
+    operationsCount = 0;
+    render();
+    algoName.textContent = '';
+}
+
+// Función para ingresar números personalizados
+function setCustomValues() {
+    customModal.style.display = 'block';
+    customNumbers.focus();
+}
+
+// Procesar números personalizados
+function processCustomNumbers() {
+    const input = customNumbers.value.trim();
+    if (!input) {
+        alert('Por favor ingresa algunos números');
+        return;
+    }
+    
+    try {
+        // Limpiar y procesar los números
+        const numberArray = input.split(',')
+            .map(num => num.trim())
+            .filter(num => num !== '')
+            .map(num => {
+                const parsed = parseInt(num);
+                if (isNaN(parsed)) {
+                    throw new Error(`"${num}" no es un número válido`);
+                }
+                return parsed;
+            });
+        
+        if (numberArray.length < 5) {
+            alert('Debes ingresar al menos 5 números');
+            return;
+        }
+        
+        if (numberArray.length > 500) {
+            alert('Máximo 500 números permitidos');
+            return;
+        }
+        
+        // Actualizar la interfaz
+        values = numberArray;
+        numInput.value = values.length;
+        operationsCount = 0;
+        render();
+        algoName.textContent = '';
+        customModal.style.display = 'none';
+        customNumbers.value = '';
+        
+    } catch (error) {
+        alert(`Error: ${error.message}`);
     }
 }
 
-.close {
-    color: #ff4444;
-    float: right;
-    font-size: 35px;
-    font-weight: bold;
-    cursor: pointer;
-    line-height: 20px;
-    transition: color 0.2s;
-}
-
-.close:hover {
-    color: #ff0000;
-}
-
-.modal-content h2 {
-    color: #00f7ff;
-    text-align: center;
-    margin-bottom: 25px;
-    font-size: 2rem;
-    text-shadow: 0 0 15px rgba(0, 247, 255, 0.6);
-}
-
-.modal-content h3 {
-    color: #ffd700;
-    margin-top: 25px;
-    margin-bottom: 15px;
-    font-size: 1.4rem;
-    border-bottom: 2px solid #ffd700;
-    padding-bottom: 8px;
-}
-
-.modal-content h4 {
-    color: #00f7ff;
-    margin-top: 15px;
-    margin-bottom: 10px;
-    font-size: 1.2rem;
-}
-
-.help-section {
-    margin-bottom: 25px;
-}
-
-.help-section p {
-    color: #ddd;
-    line-height: 1.8;
-    margin: 10px 0;
-}
-
-.help-section ul {
-    color: #ddd;
-    line-height: 1.9;
-    margin-left: 20px;
-}
-
-.help-section li {
-    margin: 8px 0;
-}
-
-.color-box {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 5px;
-    font-weight: bold;
-    color: #222;
-    margin-right: 5px;
-}
-
-.algo-card {
-    background: rgba(0, 247, 255, 0.05);
-    border-left: 4px solid #00f7ff;
-    padding: 15px;
-    margin: 15px 0;
-    border-radius: 8px;
-}
-
-.algo-card p {
-    margin: 8px 0;
-}
-
-.algo-card strong {
-    color: #ffd700;
-}
-
-/* Estilos para el modal personalizado */
-#customModal .modal-content {
-    border: 2px solid #00ff88;
-    box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
-}
-
-#customModal h2 {
-    color: #00ff88;
-    text-shadow: 0 0 15px rgba(0, 255, 136, 0.6);
-}
-
-#customNumbers {
-    background: #23234a;
-    border: 1px solid #00ff88;
-    color: #fff;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    resize: vertical;
-}
-
-#customNumbers:focus {
-    outline: none;
-    border-color: #ffd700;
-    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
-}
-
-#confirmCustom {
-    background: linear-gradient(90deg, #00ff88, #00cc66);
-    box-shadow: 0 2px 8px #00ff8833;
-}
-
-#confirmCustom:hover {
-    box-shadow: 0 4px 12px #00ff8866;
-}
-
-#cancelCustom {
-    background: linear-gradient(90deg, #ff4444, #cc0000);
-    box-shadow: 0 2px 8px #ff444433;
-}
-
-#cancelCustom:hover {
-    box-shadow: 0 4px 12px #ff444466;
-}
-
-/* --- Responsividad --- */
-@media (max-width: 768px) {
-    h1 {
-        font-size: 1.6rem;
-        margin: 16px 0 8px;
+// Calcular tamaño proporcional al valor (BURBUJAS MÁS GRANDES)
+function calculateBubbleSize(value, n) {
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+    const range = maxVal - minVal || 1;
+    const normalized = (value - minVal) / range;
+    
+    // Tamaños más grandes según cantidad de elementos
+    let minSize, maxSize;
+    if (n <= 30) {
+        minSize = 70;
+        maxSize = 140;
+    } else if (n <= 60) {
+        minSize = 60;
+        maxSize = 110;
+    } else if (n <= 100) {
+        minSize = 50;
+        maxSize = 90;
+    } else if (n <= 200) {
+        minSize = 45;
+        maxSize = 75;
+    } else {
+        minSize = 40;
+        maxSize = 65;
     }
+    
+    return minSize + (normalized * (maxSize - minSize));
+}
 
-    .controls {
-        gap: 6px;
-        padding: 0 10px;
+// Tamaño de fuente proporcional
+function calculateFontSize(bubbleSize) {
+    return Math.max(10, Math.floor(bubbleSize * 0.28));
+}
+
+// Render optimizado
+function render() {
+    bubblesDiv.innerHTML = '';
+    const n = values.length;
+    if (n === 0) return;
+
+    bubbles = [];
+    const fragment = document.createDocumentFragment();
+    
+    for (let i = 0; i < n; i++) {
+        const value = values[i];
+        const bubbleSize = calculateBubbleSize(value, n);
+        const fontSize = calculateFontSize(bubbleSize);
+
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.style.width = `${bubbleSize}px`;
+        bubble.style.height = `${bubbleSize}px`;
+        bubble.style.fontSize = `${fontSize}px`;
+        bubble.textContent = value;
+
+        fragment.appendChild(bubble);
+        bubbles.push(bubble);
     }
+    
+    bubblesDiv.appendChild(fragment);
+}
 
-    .range-controls, .sort-controls {
-        flex-direction: column;
-        gap: 8px;
+// Actualización ultra optimizada con batch rendering
+function updateBubbles(active = [], sorted = [], comparing = []) {
+    const activeSet = new Set(active);
+    const sortedSet = new Set(sorted);
+    const comparingSet = new Set(comparing);
+    
+    bubbles.forEach((bubble, index) => {
+        const value = values[index];
+        const currentValue = parseInt(bubble.textContent);
+        
+        // Solo actualizar si cambió el valor
+        if (currentValue !== value) {
+            bubble.textContent = value;
+            
+            // Recalcular tamaño solo si cambió el valor
+            const newSize = calculateBubbleSize(value, values.length);
+            const newFontSize = calculateFontSize(newSize);
+            bubble.style.width = `${newSize}px`;
+            bubble.style.height = `${newSize}px`;
+            bubble.style.fontSize = `${newFontSize}px`;
+        }
+        
+        // Actualizar clases eficientemente
+        const isActive = activeSet.has(index);
+        const isSorted = sortedSet.has(index);
+        const isComparing = comparingSet.has(index);
+        
+        bubble.classList.toggle('active', isActive);
+        bubble.classList.toggle('sorted', isSorted);
+        bubble.classList.toggle('comparing', isComparing);
+    });
+}
+
+// Deshabilitar botones
+function disableButtons(disabled) {
+    const buttons = [bubbleBtn, insertionBtn, shellBtn, mergeBtn, selectionBtn, randomBtn, customBtn];
+    buttons.forEach(btn => (btn.disabled = disabled));
+    numInput.disabled = disabled;
+    minInput.disabled = disabled;
+    maxInput.disabled = disabled;
+}
+
+// Delay adaptativo
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Calcular velocidad según tamaño
+function getAnimationSpeed(n) {
+    if (n <= 20) return 50;
+    if (n <= 50) return 30;
+    if (n <= 100) return 15;
+    if (n <= 200) return 8;
+    return 3;
+}
+
+// Calcular valor Big O
+function calculateBigO(algoName, n) {
+    let bigOValue;
+    
+    switch(algoName) {
+        case 'Bubble Sort':
+        case 'Selection Sort':
+        case 'Insertion Sort':
+            bigOValue = n * n;
+            break;
+        case 'Shell Sort':
+        case 'Merge Sort':
+            bigOValue = n * Math.log2(n);
+            break;
+        default:
+            bigOValue = 0;
     }
+    
+    return Math.round(bigOValue);
+}
 
-    .controls button {
-        padding: 6px 12px;
-        font-size: 0.9rem;
-        width: 100%;
-        max-width: 200px;
-    }
+// Mostrar información del algoritmo con Big O calculado
+function updateAlgoInfo(name, n) {
+    const bigOValue = calculateBigO(name, n);
+    const operationsText = operationsCount > 0 ? ` | Operaciones: ${operationsCount.toLocaleString()}` : '';
+    algoName.textContent = `${name} - O(${getBigONotation(name)}) [n=${n}] ≈ ${bigOValue.toLocaleString()}${operationsText}`;
+}
 
-    .bubbles {
-        gap: 8px;
-        padding: 15px 10px;
-    }
-
-    .bubble {
-        min-width: 35px;
-        min-height: 35px;
-    }
-
-    #algoName {
-        font-size: 1.1rem;
-        margin-top: 12px;
-    }
-
-    .modal-content {
-        margin: 5% auto;
-        padding: 20px;
-        width: 95%;
+// Obtener notación Big O
+function getBigONotation(algoName) {
+    switch(algoName) {
+        case 'Bubble Sort':
+        case 'Selection Sort':
+        case 'Insertion Sort':
+            return 'n²';
+        case 'Shell Sort':
+        case 'Merge Sort':
+            return 'n log n';
+        default:
+            return '?';
     }
 }
 
-@media (max-width: 480px) {
-    h1 {
-        font-size: 1.3rem;
-    }
+// ALGORITMOS OPTIMIZADOS
+async function bubbleSort() {
+    const n = values.length;
+    animationSpeed = getAnimationSpeed(n);
+    operationsCount = 0;
+    
+    disableButtons(true);
+    sorting = true;
 
-    .controls {
-        flex-direction: column;
-        gap: 8px;
-    }
+    try {
+        let swapped;
+        for (let i = 0; i < n - 1; i++) {
+            swapped = false;
+            for (let j = 0; j < n - i - 1; j++) {
+                if (!sorting) return;
 
-    .bubbles {
-        gap: 6px;
-        padding: 10px 5px;
-    }
+                updateAlgoInfo('Bubble Sort', n);
+                updateBubbles([j, j + 1], Array.from({ length: i }, (_, k) => n - 1 - k));
+                await sleep(animationSpeed);
 
-    .bubble {
-        min-width: 30px;
-        min-height: 30px;
-    }
-
-    .modal-content {
-        padding: 15px;
-    }
-
-    .modal-content h2 {
-        font-size: 1.5rem;
-    }
-
-    .modal-content h3 {
-        font-size: 1.2rem;
+                if (values[j] > values[j + 1]) {
+                    [values[j], values[j + 1]] = [values[j + 1], values[j]];
+                    swapped = true;
+                    operationsCount += 3; // Comparación + intercambio
+                    updateBubbles([j, j + 1], Array.from({ length: i }, (_, k) => n - 1 - k));
+                    await sleep(animationSpeed);
+                }
+                operationsCount++; // Comparación
+            }
+            if (!swapped) break;
+        }
+        updateBubbles([], Array.from({ length: n }, (_, i) => i));
+        updateAlgoInfo('Bubble Sort', n);
+    } finally {
+        sorting = false;
+        disableButtons(false);
     }
 }
+
+async function insertionSort() {
+    const n = values.length;
+    animationSpeed = getAnimationSpeed(n);
+    operationsCount = 0;
+    
+    disableButtons(true);
+    sorting = true;
+
+    try {
+        for (let i = 1; i < n; i++) {
+            let key = values[i];
+            let j = i - 1;
+            operationsCount++; // Asignación
+
+            while (j >= 0 && values[j] > key) {
+                if (!sorting) return;
+                values[j + 1] = values[j];
+                operationsCount += 2; // Comparación + asignación
+                updateAlgoInfo('Insertion Sort', n);
+                updateBubbles([j, j + 1, i], [], [j, j + 1]);
+                await sleep(animationSpeed);
+                j--;
+            }
+
+            values[j + 1] = key;
+            operationsCount++; // Asignación final
+            updateAlgoInfo('Insertion Sort', n);
+            updateBubbles([j + 1]);
+            await sleep(animationSpeed);
+        }
+        updateBubbles([], values.map((_, i) => i));
+        updateAlgoInfo('Insertion Sort', n);
+    } finally {
+        sorting = false;
+        disableButtons(false);
+    }
+}
+
+async function shellSort() {
+    const n = values.length;
+    animationSpeed = getAnimationSpeed(n);
+    operationsCount = 0;
+    
+    disableButtons(true);
+    sorting = true;
+
+    try {
+        let gaps = [701, 301, 132, 57, 23, 10, 4, 1].filter(gap => gap < n);
+        if (gaps.length === 0) gaps = [1];
+        
+        for (let gap of gaps) {
+            for (let i = gap; i < n; i++) {
+                if (!sorting) return;
+                
+                let temp = values[i];
+                let j = i;
+                operationsCount++; // Asignación
+                
+                while (j >= gap && values[j - gap] > temp) {
+                    if (!sorting) return;
+                    values[j] = values[j - gap];
+                    operationsCount += 2; // Comparación + asignación
+                    updateAlgoInfo('Shell Sort', n);
+                    updateBubbles([j, j - gap], [], [j, j - gap]);
+                    await sleep(animationSpeed);
+                    j -= gap;
+                }
+                
+                values[j] = temp;
+                operationsCount++; // Asignación final
+                updateAlgoInfo('Shell Sort', n);
+                updateBubbles([j, i]);
+                await sleep(animationSpeed);
+            }
+        }
+        updateBubbles([], values.map((_, i) => i));
+        updateAlgoInfo('Shell Sort', n);
+    } finally {
+        sorting = false;
+        disableButtons(false);
+    }
+}
+
+async function mergeSortMain() {
+    const n = values.length;
+    animationSpeed = getAnimationSpeed(n);
+    operationsCount = 0;
+    
+    disableButtons(true);
+    sorting = true;
+
+    try {
+        await mergeSort(0, n - 1);
+        if (sorting) {
+            updateBubbles([], values.map((_, i) => i));
+            updateAlgoInfo('Merge Sort', n);
+        }
+    } finally {
+        sorting = false;
+        disableButtons(false);
+    }
+
+    async function mergeSort(start, end) {
+        if (start >= end) return;
+
+        const mid = Math.floor((start + end) / 2);
+        await mergeSort(start, mid);
+        await mergeSort(mid + 1, end);
+        await merge(start, mid, end);
+    }
+
+    async function merge(start, mid, end) {
+        const left = values.slice(start, mid + 1);
+        const right = values.slice(mid + 1, end + 1);
+        operationsCount += (left.length + right.length); // Operaciones de slice
+
+        let i = 0, j = 0, k = start;
+
+        while (i < left.length && j < right.length) {
+            if (!sorting) return;
+            updateAlgoInfo('Merge Sort', n);
+            updateBubbles([k], [], [start + i, mid + 1 + j]);
+            await sleep(animationSpeed);
+
+            if (left[i] <= right[j]) {
+                values[k] = left[i];
+                i++;
+            } else {
+                values[k] = right[j];
+                j++;
+            }
+            operationsCount += 2; // Comparación + asignación
+            k++;
+        }
+
+        while (i < left.length) {
+            if (!sorting) return;
+            values[k] = left[i];
+            operationsCount++; // Asignación
+            updateAlgoInfo('Merge Sort', n);
+            updateBubbles([k]);
+            await sleep(animationSpeed);
+            i++;
+            k++;
+        }
+
+        while (j < right.length) {
+            if (!sorting) return;
+            values[k] = right[j];
+            operationsCount++; // Asignación
+            updateAlgoInfo('Merge Sort', n);
+            updateBubbles([k]);
+            await sleep(animationSpeed);
+            j++;
+            k++;
+        }
+    }
+}
+
+async function selectionSort() {
+    const n = values.length;
+    animationSpeed = getAnimationSpeed(n);
+    operationsCount = 0;
+    
+    disableButtons(true);
+    sorting = true;
+
+    try {
+        for (let i = 0; i < n - 1; i++) {
+            let minIdx = i;
+
+            for (let j = i + 1; j < n; j++) {
+                if (!sorting) return;
+                updateAlgoInfo('Selection Sort', n);
+                updateBubbles([minIdx, j, i], [], [minIdx, j]);
+                await sleep(animationSpeed);
+
+                if (values[j] < values[minIdx]) {
+                    minIdx = j;
+                }
+                operationsCount++; // Comparación
+            }
+
+            if (minIdx !== i) {
+                [values[i], values[minIdx]] = [values[minIdx], values[i]];
+                operationsCount += 3; // Comparación + intercambio
+                updateAlgoInfo('Selection Sort', n);
+                updateBubbles([i, minIdx]);
+                await sleep(animationSpeed);
+            }
+        }
+        updateBubbles([], values.map((_, i) => i));
+        updateAlgoInfo('Selection Sort', n);
+    } finally {
+        sorting = false;
+        disableButtons(false);
+    }
+}
+
+// EVENTOS
+numInput.addEventListener('change', () => {
+    let n = parseInt(numInput.value);
+    if (isNaN(n) || n < 5) n = 5;
+    if (n > 500) n = 500;
+    numInput.value = n;
+    
+    // Ajustar máximo automáticamente si es necesario
+    const min = parseInt(minInput.value);
+    const max = parseInt(maxInput.value);
+    if (max - min + 1 < n) {
+        maxInput.value = min + n - 1;
+    }
+    
+    if (!sorting) randomValues(n, min, max);
+});
+
+minInput.addEventListener('change', () => {
+    let min = parseInt(minInput.value);
+    if (isNaN(min) || min < 1) min = 1;
+    if (min > 999) min = 999;
+    minInput.value = min;
+    
+    const n = parseInt(numInput.value);
+    const max = parseInt(maxInput.value);
+    
+    if (max <= min) {
+        maxInput.value = min + 1;
+    }
+    
+    if (max - min + 1 < n) {
+        maxInput.value = min + n - 1;
+    }
+    
+    if (!sorting) randomValues(n, min, max);
+});
+
+maxInput.addEventListener('change', () => {
+    let max = parseInt(maxInput.value);
+    if (isNaN(max) || max < 10) max = 10;
+    if (max > 1000) max = 1000;
+    maxInput.value = max;
+    
+    const n = parseInt(numInput.value);
+    const min = parseInt(minInput.value);
+    
+    if (max <= min) {
+        minInput.value = max - 1;
+        if (minInput.value < 1) minInput.value = 1;
+    }
+    
+    if (max - min + 1 < n) {
+        alert(`El rango debe ser al menos igual a la cantidad de burbujas (${n}). Máximo ajustado a ${min + n - 1}`);
+        maxInput.value = min + n - 1;
+    }
+    
+    if (!sorting) randomValues(n, min, max);
+});
+
+randomBtn.onclick = () => {
+    if (sorting) return;
+    let n = parseInt(numInput.value);
+    let min = parseInt(minInput.value);
+    let max = parseInt(maxInput.value);
+    
+    if (isNaN(n) || n < 5) n = 5;
+    if (n > 500) n = 500;
+    if (isNaN(min) || min < 1) min = 1;
+    if (isNaN(max) || max < 10) max = 100;
+    
+    numInput.value = n;
+    minInput.value = min;
+    maxInput.value = max;
+    
+    randomValues(n, min, max);
+};
+
+customBtn.onclick = () => !sorting && setCustomValues();
+bubbleBtn.onclick = () => !sorting && bubbleSort();
+insertionBtn.onclick = () => !sorting && insertionSort();
+shellBtn.onclick = () => !sorting && shellSort();
+mergeBtn.onclick = () => !sorting && mergeSortMain();
+selectionBtn.onclick = () => !sorting && selectionSort();
+
+// Modales
+helpBtn.onclick = () => {
+    helpModal.style.display = 'block';
+};
+
+closeModal.onclick = () => {
+    helpModal.style.display = 'none';
+};
+
+closeCustom.onclick = () => {
+    customModal.style.display = 'none';
+    customNumbers.value = '';
+};
+
+cancelCustom.onclick = () => {
+    customModal.style.display = 'none';
+    customNumbers.value = '';
+};
+
+confirmCustom.onclick = () => {
+    processCustomNumbers();
+};
+
+customNumbers.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        processCustomNumbers();
+    }
+});
+
+window.onclick = (event) => {
+    if (event.target === helpModal) {
+        helpModal.style.display = 'none';
+    }
+    if (event.target === customModal) {
+        customModal.style.display = 'none';
+        customNumbers.value = '';
+    }
+};
+
+window.addEventListener('resize', () => {
+    if (!sorting) render();
+});
+
+window.addEventListener('load', () => {
+    setTimeout(() => randomValues(parseInt(numInput.value), parseInt(minInput.value), parseInt(maxInput.value)), 100);
+});
