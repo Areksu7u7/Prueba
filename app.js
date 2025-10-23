@@ -1734,68 +1734,79 @@ function northwestAlgorithm(tipoOptimizacion, matrizCostos, ofertaOriginal, dema
 
         const costTotal = calcularCostoTotal(asignacion, costos);
 
-        // Verificar optimalidad
-        const esOptimo = verificarOptimalidad(costosReducidos, asignacion, tipoOptimizacion);
+            // Verificar optimalidad
+            const esOptimo = verificarOptimalidad(costosReducidos, asignacion, tipoOptimizacion);
 
-        iteraciones.push({
-            numero: iteracion,
-            asignacion: asignacion.map(row => [...row]),
-            multiplicadores: { ui: [...ui], vj: [...vj] },
-            costosReducidos: costosReducidos.map(row => [...row]),
-            costTotal: costTotal,
-            esOptimo: esOptimo,
-            fase: 'MODI - Optimización'
-        });
+            iteraciones.push({
+                numero: iteracion,
+                asignacion: asignacion.map(row => [...row]),
+                multiplicadores: { ui: [...ui], vj: [...vj] },
+                costosReducidos: costosReducidos.map(row => [...row]),
+                costTotal: costTotal,
+                esOptimo: esOptimo,
+                fase: 'MODI - Optimización'
+            });
 
-        if (esOptimo) break;
+            // Guardar estado de optimalidad para devolverlo si el proceso se interrumpe
+            let lastEsOptimo = esOptimo;
+            if (esOptimo) break;
 
-        // Encontrar celda de entrada
-        const celdaEntrada = encontrarCeldaEntrada(costosReducidos, asignacion, tipoOptimizacion);
+            // Obtener lista de celdas candidatas ordenadas
+            const candidatos = obtenerCeldasEntrada(costosReducidos, asignacion, tipoOptimizacion);
+            if (!candidatos || candidatos.length === 0) {
+                console.warn('No se pudo encontrar celda de entrada (no hay candidatas)');
+                break;
+            }
 
-        if (!celdaEntrada) {
-            console.warn('No se pudo encontrar celda de entrada');
-            break;
-        }
+            let loop = null;
+            let chosenCell = null;
+            // Intentar cada candidata hasta encontrar un loop válido
+            for (const cand of candidatos) {
+                chosenCell = { i: cand.i, j: cand.j };
+                console.log(`Iteración ${iteracion}: intentanto celda de entrada [${chosenCell.i}][${chosenCell.j}] (valor ${cand.val})`);
+                loop = crearLoop(asignacion, chosenCell, mFinal, nFinal);
+                if (loop && loop.length > 0) break;
+            }
 
-        console.log(`Iteración ${iteracion}: Celda de entrada [${celdaEntrada.i}][${celdaEntrada.j}]`);
+            if (!loop || loop.length === 0) {
+                // No se encontró loop válido para ninguna candidata: intentar manejar degeneración y repetir
+                console.warn('No se pudo crear loop válido para ninguna candidata. Aplicando manejo de degeneración adicional y reintentando.');
+                manejarDegeneracion(asignacion, costos, mFinal, nFinal);
+                // Después de marcar degeneración, volver a la siguiente iteración (se recomputarán multiplicadores)
+                continue;
+            }
 
-        // Crear loop
-        const loop = crearLoop(asignacion, celdaEntrada, mFinal, nFinal);
+            console.log('Loop encontrado:', loop);
 
-        if (!loop || loop.length === 0) {
-            console.warn('No se pudo crear loop válido');
-            console.log('Asignación actual:', asignacion);
-            console.log('Celda entrada:', celdaEntrada);
-            break;
-        }
+            // Calcular theta
+            const theta = calcularTheta(asignacion, loop);
 
-        console.log('Loop encontrado:', loop);
+            if (theta <= 0) {
+                console.warn('Theta inválido:', theta);
+                console.log('Loop:', loop);
+                console.log('Asignación:', asignacion);
+                break;
+            }
 
-        // Calcular theta
-        const theta = calcularTheta(asignacion, loop);
+            console.log(`Theta calculado: ${theta}`);
 
-        if (theta <= 0) {
-            console.warn('Theta inválido:', theta);
-            console.log('Loop:', loop);
-            console.log('Asignación:', asignacion);
-            break;
-        }
-
-        console.log(`Theta calculado: ${theta}`);
-
-        // Aplicar transferencia
-        asignacion = aplicarTransferencia(asignacion, loop, theta);
-        console.log('Nueva asignación después de transferencia:', asignacion);
+            // Aplicar transferencia
+            asignacion = aplicarTransferencia(asignacion, loop, theta);
+            console.log('Nueva asignación después de transferencia:', asignacion);
     }
 
     const costoFinal = calcularCostoTotal(asignacion, costos);
-    const esOptimo = iteracion < maxIteraciones;
+    // Determinar si la última comprobación declaró optimalidad
+    // Si guardamos 'esOptimo' en la última iteración del bucle, preferir ese valor;
+    // como simplificación, comprobamos la última entrada en iteraciones
+    let finalEsOptimo = false;
+    if (iteraciones.length > 0) finalEsOptimo = !!iteraciones[iteraciones.length - 1].esOptimo;
 
     return {
         costoOptimo: costoFinal,
         asignacionOptima: asignacion,
         iteraciones: iteraciones,
-        solucionOptimal: esOptimo,
+        solucionOptimal: finalEsOptimo,
         nodeFicticioAgregado: nodeFicticio,
         dimensiones: { m: mFinal, n: nFinal },
         matrizCostos: costos,
@@ -1841,21 +1852,24 @@ function calcularCostoTotal(asignacion, costos) {
 }
 
 function contarBasicas(asignacion) {
+    const EPS = 1e-6;
     let count = 0;
     for (let i = 0; i < asignacion.length; i++) {
         for (let j = 0; j < asignacion[i].length; j++) {
-            if (asignacion[i][j] > 0) count++;
+            if (asignacion[i][j] >= EPS) count++;
         }
     }
     return count;
 }
 
 function manejarDegeneracion(asignacion, costos, m, n) {
-    // Agregar epsilon (0) a una celda no básica estratégicamente
+    // Agregar un epsilon no nulo a una celda no básica estratégica
+    // Usamos un EPS lo suficientemente grande para que sea considerada básica en conteos
+    const EPS = 1e-6;
     for (let i = 0; i < m; i++) {
         for (let j = 0; j < n; j++) {
             if (asignacion[i][j] === 0) {
-                asignacion[i][j] = 1e-10; // Epsilon muy pequeño
+                asignacion[i][j] = EPS; // marca degeneración
                 return;
             }
         }
@@ -1863,6 +1877,7 @@ function manejarDegeneracion(asignacion, costos, m, n) {
 }
 
 function calcularMultiplicadores(asignacion, costos, m, n) {
+    const EPS = 1e-6;
     const ui = new Array(m).fill(undefined);
     const vj = new Array(n).fill(undefined);
 
@@ -1877,7 +1892,7 @@ function calcularMultiplicadores(asignacion, costos, m, n) {
 
         for (let i = 0; i < m; i++) {
             for (let j = 0; j < n; j++) {
-                if (asignacion[i][j] > 0) {
+                if (asignacion[i][j] >= EPS) {
                     // Celda básica: costo[i][j] = ui[i] + vj[j]
                     if (ui[i] !== undefined && vj[j] === undefined) {
                         vj[j] = costos[i][j] - ui[i];
@@ -1899,11 +1914,12 @@ function calcularMultiplicadores(asignacion, costos, m, n) {
 }
 
 function calcularCostosReducidos(asignacion, costos, ui, vj, m, n) {
+    const EPS = 1e-6;
     const costosReducidos = Array.from({ length: m }, () => new Array(n).fill(0));
 
     for (let i = 0; i < m; i++) {
         for (let j = 0; j < n; j++) {
-            if (asignacion[i][j] === 0 || asignacion[i][j] < 1e-9) {
+            if (asignacion[i][j] < EPS) {
                 costosReducidos[i][j] = costos[i][j] - (ui[i] + vj[j]);
             } else {
                 costosReducidos[i][j] = 0; // Celdas básicas no se evalúan
@@ -1915,13 +1931,14 @@ function calcularCostosReducidos(asignacion, costos, ui, vj, m, n) {
 }
 
 function verificarOptimalidad(costosReducidos, asignacion, tipoOptimizacion) {
+    const EPS = 1e-6;
     for (let i = 0; i < costosReducidos.length; i++) {
         for (let j = 0; j < costosReducidos[i].length; j++) {
-            if (asignacion[i][j] === 0 || asignacion[i][j] < 1e-9) {
-                if (tipoOptimizacion === 'minimizar' && costosReducidos[i][j] < -1e-9) {
+            if (asignacion[i][j] < EPS) {
+                if (tipoOptimizacion === 'minimizar' && costosReducidos[i][j] < -EPS) {
                     return false;
                 }
-                if (tipoOptimizacion === 'maximizar' && costosReducidos[i][j] > 1e-9) {
+                if (tipoOptimizacion === 'maximizar' && costosReducidos[i][j] > EPS) {
                     return false;
                 }
             }
@@ -1931,12 +1948,13 @@ function verificarOptimalidad(costosReducidos, asignacion, tipoOptimizacion) {
 }
 
 function encontrarCeldaEntrada(costosReducidos, asignacion, tipoOptimizacion) {
+    const EPS = 1e-6;
     let mejorValor = tipoOptimizacion === 'minimizar' ? Infinity : -Infinity;
     let mejorCelda = null;
 
     for (let i = 0; i < costosReducidos.length; i++) {
         for (let j = 0; j < costosReducidos[i].length; j++) {
-            if (asignacion[i][j] === 0 || asignacion[i][j] < 1e-9) {
+            if (asignacion[i][j] < EPS) {
                 if (tipoOptimizacion === 'minimizar' && costosReducidos[i][j] < mejorValor) {
                     mejorValor = costosReducidos[i][j];
                     mejorCelda = { i, j };
@@ -1951,78 +1969,91 @@ function encontrarCeldaEntrada(costosReducidos, asignacion, tipoOptimizacion) {
     return mejorCelda;
 }
 
-function crearLoop(asignacion, celdaEntrada, m, n) {
-    const { i: startI, j: startJ } = celdaEntrada;
-
-    // Método BFS mejorado para encontrar loop
-    function buscarLoopBFS() {
-        const queue = [];
-        queue.push({
-            i: startI,
-            j: startJ,
-            path: [{ i: startI, j: startJ, signo: 1 }],
-            direction: 'row',
-            visited: new Set([`${startI},${startJ},start`])
-        });
-
-        while (queue.length > 0) {
-            const { i, j, path, direction, visited } = queue.shift();
-
-            if (direction === 'row') {
-                // Buscar en la misma fila por celdas básicas
-                for (let jj = 0; jj < n; jj++) {
-                    if (jj !== j && asignacion[i][jj] > 1e-9) {
-                        const key = `${i},${jj},row`;
-                        if (visited.has(key)) continue;
-
-                        const newPath = [...path, { i: i, j: jj, signo: path.length % 2 === 1 ? -1 : 1 }];
-
-                        // Verificar si cerramos el loop (volvemos a la columna inicial)
-                        if (jj === startJ && newPath.length >= 4) {
-                            // Verificar que podemos cerrar desde esta fila
-                            if (asignacion[i][startJ] > 1e-9 && i !== startI) {
-                                return newPath;
-                            }
-                        }
-
-                        const newVisited = new Set(visited);
-                        newVisited.add(key);
-                        queue.push({ i: i, j: jj, path: newPath, direction: 'col', visited: newVisited });
-                    }
-                }
-            } else {
-                // Buscar en la misma columna por celdas básicas
-                for (let ii = 0; ii < m; ii++) {
-                    if (ii !== i && asignacion[ii][j] > 1e-9) {
-                        const key = `${ii},${j},col`;
-                        if (visited.has(key)) continue;
-
-                        const newPath = [...path, { i: ii, j: j, signo: path.length % 2 === 1 ? -1 : 1 }];
-
-                        // Verificar si cerramos el loop (volvemos a la fila inicial)
-                        if (ii === startI && newPath.length >= 4) {
-                            // Verificar que podemos cerrar desde esta columna
-                            if (asignacion[startI][j] > 1e-9) {
-                                return newPath;
-                            }
-                        }
-
-                        const newVisited = new Set(visited);
-                        newVisited.add(key);
-                        queue.push({ i: ii, j: j, path: newPath, direction: 'row', visited: newVisited });
-                    }
-                }
+// Devuelve todas las celdas candidatas (no básicas) ordenadas por prioridad
+function obtenerCeldasEntrada(costosReducidos, asignacion, tipoOptimizacion) {
+    const EPS = 1e-6;
+    const lista = [];
+    for (let i = 0; i < costosReducidos.length; i++) {
+        for (let j = 0; j < costosReducidos[i].length; j++) {
+            if (asignacion[i][j] < EPS) {
+                lista.push({ i, j, val: costosReducidos[i][j] });
             }
         }
+    }
+    // Ordenar: para minimizar, los más negativos primero; para maximizar, los más positivos primero
+    if (tipoOptimizacion === 'minimizar') lista.sort((a, b) => a.val - b.val);
+    else lista.sort((a, b) => b.val - a.val);
+    return lista;
+}
 
+function crearLoop(asignacion, celdaEntrada, m, n) {
+    const { i: startI, j: startJ } = celdaEntrada;
+    const EPS = 1e-6;
+
+    // DFS alternando entre movimientos por fila y por columna
+    function dfs(i, j, direction, path, visited) {
+        // direction: 'row' -> next move along row (change j), 'col' -> next move along column (change i)
+        if (direction === 'row') {
+            for (let jj = 0; jj < n; jj++) {
+                if (jj === j) continue;
+                // permitimos moverse a celdas básicas (>=EPS) o a la celda inicial
+                if (!(asignacion[i][jj] >= EPS) && !(i === startI && jj === startJ)) continue;
+                const key = `${i},${jj}`;
+                // evitar volver inmediatamente al anterior
+                if (visited.has(key)) continue;
+
+                // si cerramos ciclo y es válido
+                if (i === startI && jj === startJ && path.length >= 3) {
+                    return [...path, { i: i, j: jj }];
+                }
+
+                visited.add(key);
+                const res = dfs(i, jj, 'col', [...path, { i: i, j: jj }], visited);
+                if (res) return res;
+                visited.delete(key);
+            }
+        } else {
+            for (let ii = 0; ii < m; ii++) {
+                if (ii === i) continue;
+                if (!(asignacion[ii][j] >= EPS) && !(ii === startI && j === startJ)) continue;
+                const key = `${ii},${j}`;
+                if (visited.has(key)) continue;
+
+                if (ii === startI && j === startJ && path.length >= 3) {
+                    return [...path, { i: ii, j: j }];
+                }
+
+                visited.add(key);
+                const res = dfs(ii, j, 'row', [...path, { i: ii, j: j }], visited);
+                if (res) return res;
+                visited.delete(key);
+            }
+        }
         return null;
     }
 
-    const loop = buscarLoopBFS();
+    // iniciar DFS desde la celda de entrada; la primera dirección puede ser fila o columna
+    const visited = new Set([`${startI},${startJ}`]);
+    let rawPath = dfs(startI, startJ, 'row', [{ i: startI, j: startJ }], visited);
+    if (!rawPath) {
+        // intentar empezando por columna
+        rawPath = dfs(startI, startJ, 'col', [{ i: startI, j: startJ }], visited);
+    }
 
-    if (!loop) {
-        console.warn('BFS no encontró loop, intentando método simple');
+    if (!rawPath) {
+        console.warn('No se encontró loop con DFS, usando fallback simple');
         return crearLoopSimple(asignacion, celdaEntrada, m, n);
+    }
+
+    // Asignar signos alternados (+,-,+,-...) empezando con + en la celda de entrada
+    const loop = rawPath.map((cell, idx) => ({ i: cell.i, j: cell.j, signo: idx % 2 === 0 ? 1 : -1 }));
+    // Asegurar que el último elemento es la misma celda de entrada y eliminar duplicado final
+    if (loop.length > 1) {
+        const last = loop[loop.length - 1];
+        if (last.i === startI && last.j === startJ) {
+            // quitar el último porque la estructura de loop espera pares alternos sin repetir la entrada al final
+            loop.pop();
+        }
     }
 
     return loop;
@@ -2031,26 +2062,27 @@ function crearLoop(asignacion, celdaEntrada, m, n) {
 // Fallback simple para búsqueda de loop
 function crearLoopSimple(asignacion, celdaEntrada, m, n) {
     const { i: ii, j: jj } = celdaEntrada;
+    const EPS = 1e-6;
 
-    // Buscar loop rectangular simple
+    // Buscar loop rectangular simple (2x2)
     for (let j = 0; j < n; j++) {
-        if (j !== jj && asignacion[ii][j] > 1e-9) {
-            // Encontramos celda básica en la misma fila
-            for (let i = 0; i < m; i++) {
-                if (i !== ii && asignacion[i][j] > 1e-9 && asignacion[i][jj] > 1e-9) {
-                    // Encontramos celda básica que cierra el loop
-                    return [
-                        { i: ii, j: jj, signo: 1 },   // Celda de entrada (+)
-                        { i: ii, j: j, signo: -1 },    // Misma fila (-)
-                        { i: i, j: j, signo: 1 },      // Misma columna (+)
-                        { i: i, j: jj, signo: -1 }     // Cierre (-)
-                    ];
-                }
+        if (j === jj) continue;
+        if (asignacion[ii][j] < EPS) continue;
+        for (let i = 0; i < m; i++) {
+            if (i === ii) continue;
+            if (asignacion[i][j] >= EPS && asignacion[i][jj] >= EPS) {
+                const loop = [
+                    { i: ii, j: jj, signo: 1 },
+                    { i: ii, j: j, signo: -1 },
+                    { i: i, j: j, signo: 1 },
+                    { i: i, j: jj, signo: -1 }
+                ];
+                return loop;
             }
         }
     }
 
-    console.error('No se encontró loop válido para celda:', celdaEntrada);
+    console.error('No se encontró loop válido para celda (fallback):', celdaEntrada);
     console.log('Asignación actual:', asignacion);
     return null;
 }
@@ -2060,19 +2092,22 @@ function calcularTheta(asignacion, loop) {
         console.error('Loop vacío en calcularTheta');
         return 0;
     }
-    
+    const EPS = 1e-6;
     let theta = Infinity;
 
     for (const celda of loop) {
         if (celda.signo === -1) {
             const valor = asignacion[celda.i][celda.j];
-            // Debe ser una celda básica (valor > 0)
-            if (valor > 1e-9) {
+            // Debe ser una celda básica (valor >= EPS)
+            if (valor >= EPS) {
                 theta = Math.min(theta, valor);
             } else {
-                // ERROR: Celda en loop no es básica
-                console.error(`Celda no-básica en loop: [${celda.i}][${celda.j}] = ${valor}`);
-                return 0;
+                // Celda en loop no es básica: ignorar (puede ser epsilon agregado), continuar
+                // si valor es muy pequeño tratamos como 0 y no la usamos para theta
+                if (valor > 1e-12) {
+                    // si está entre 1e-12 y EPS, aceptamos como candidata
+                    theta = Math.min(theta, valor);
+                }
             }
         }
     }
