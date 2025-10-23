@@ -46,6 +46,7 @@
             padding: 24px 32px;
             text-align: center;
             border-radius: 16px 16px 0 0;
+            position: relative;
         }
 
         .header h1 {
@@ -342,6 +343,153 @@
             margin: 0 auto;
         }
 
+        .redirect-btn {
+            padding: 12px 24px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin: 0 5px;
+        }
+
+        .redirect-btn:hover {
+            background: #45a049;
+        }
+
+        .help-btn {
+            background: var(--warning);
+        }
+
+        .help-btn:hover {
+            background: #e69500;
+        }
+
+        /* Modal de ayuda */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header h2 {
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .help-section {
+            margin-bottom: 20px;
+        }
+
+        .help-section h3 {
+            margin-bottom: 10px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .help-section p {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .help-section ul {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .help-section li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .manual-insertion-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .manual-insertion-controls input {
+            grid-column: 1 / -1;
+        }
+
+        .manual-insertion-controls button {
+            margin-bottom: 0;
+        }
+
+        .node-history {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .node-history h4 {
+            margin-bottom: 8px;
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .node-history-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .node-history-item {
+            background: var(--primary);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
         /* Responsive */
         @media (max-width: 1200px) {
             .main-content {
@@ -370,23 +518,11 @@
             .examples {
                 grid-template-columns: 1fr;
             }
+            
+            .manual-insertion-controls {
+                grid-template-columns: 1fr;
+            }
         }
-
-            .redirect-btn {
-            padding: 12px 24px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s;
-            }
-
-            .redirect-btn:hover {
-            background: #45a049;
-            }
-
     </style>
 </head>
 <body>
@@ -394,10 +530,15 @@
         <div class="header">
             <h1>🌳 Visualizador de Árboles Binarios</h1>
             <p>Construye, visualiza y analiza árboles binarios de forma interactiva</p>
-
-            <button onclick="window.location.href='grafos johnson.html'" class="redirect-btn">
-                🌳 Ir a Grafos
-            </button>
+            
+            <div>
+                <button onclick="window.location.href='grafos johnson.html'" class="redirect-btn">
+                    🌳 Ir a Grafos
+                </button>
+                <button id="helpBtn" class="redirect-btn help-btn">
+                    ❓ Ayuda
+                </button>
+            </div>
         </div>
         
         <div class="main-content">
@@ -409,6 +550,7 @@
                 <div class="tabs">
                     <button class="tab active" data-tab="array">Array</button>
                     <button class="tab" data-tab="traversals">Recorridos</button>
+                    <button class="tab" data-tab="manual">Manual</button>
                 </div>
                 
                 <!-- Modo Array -->
@@ -464,6 +606,47 @@
                     
                     <button class="btn btn-secondary" id="buildFromInorderPostorderBtn">
                         🔄 Reconstruir desde Inorden+Postorden
+                    </button>
+                </div>
+                
+                <!-- Modo Manual -->
+                <div class="tab-content" id="manualTab">
+                    <div class="alert alert-warning">
+                        <span>⚠️</span>
+                        <div>Inserta nodos uno por uno para construir un Árbol Binario de Búsqueda (BST)</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="manualNodeValue">Valor del nodo:</label>
+                        <input type="text" id="manualNodeValue" placeholder="Ej: 5 o A">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="manualType">Tipo de datos:</label>
+                        <select id="manualType">
+                            <option value="numbers">Números</option>
+                            <option value="letters">Letras</option>
+                        </select>
+                    </div>
+                    
+                    <div class="manual-insertion-controls">
+                        <button class="btn btn-success" id="insertNodeBtn">
+                            ➕ Insertar Nodo
+                        </button>
+                        <button class="btn btn-danger" id="removeNodeBtn">
+                            ➖ Eliminar Nodo
+                        </button>
+                    </div>
+                    
+                    <div class="node-history">
+                        <h4>Historial de nodos insertados:</h4>
+                        <div class="node-history-list" id="nodeHistoryList">
+                            <!-- Los nodos se mostrarán aquí -->
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-secondary" id="clearManualTreeBtn">
+                        🗑️ Limpiar Árbol Manual
                     </button>
                 </div>
                 
@@ -570,6 +753,82 @@
         </div>
     </div>
 
+    <!-- Modal de ayuda -->
+    <div class="modal" id="helpModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📖 Guía de Uso</h2>
+                <button class="close-modal" id="closeHelpModal">✕</button>
+            </div>
+            
+            <div class="help-section">
+                <h3>🌳 Crear Árbol desde Array</h3>
+                <p>Introduce números o letras separados por comas. El sistema creará un BST balanceado automáticamente.</p>
+                <ul>
+                    <li>Ejemplo de números: <code>5,3,7,1,9,2,8</code></li>
+                    <li>Ejemplo de letras: <code>A,C,B,E,D</code></li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h3>🔄 Reconstruir desde Recorridos</h3>
+                <p>Proporciona los recorridos INORDEN y PREORDEN o POSTORDEN para reconstruir el árbol.</p>
+                <ul>
+                    <li>INORDEN es obligatorio</li>
+                    <li>Debes proporcionar PREORDEN O POSTORDEN (no ambos)</li>
+                    <li>Ejemplo: Preorden: <code>A,B,D,E,C,F</code>, Inorden: <code>D,B,E,A,F,C</code></li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h3>➕ Inserción Manual</h3>
+                <p>Inserta nodos uno por uno para construir un Árbol Binario de Búsqueda.</p>
+                <ul>
+                    <li>Introduce el valor del nodo y selecciona el tipo de datos</li>
+                    <li>Haz clic en "Insertar Nodo" para añadirlo al árbol</li>
+                    <li>Puedes eliminar nodos específicos con "Eliminar Nodo"</li>
+                    <li>El historial muestra los nodos que has insertado</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h3>📊 Recorridos</h3>
+                <p>Muestra los diferentes recorridos del árbol actual:</p>
+                <ul>
+                    <li><strong>Preorden:</strong> Raíz - Izquierda - Derecha</li>
+                    <li><strong>Inorden:</strong> Izquierda - Raíz - Derecha (ordenado en BST)</li>
+                    <li><strong>Postorden:</strong> Izquierda - Derecha - Raíz</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h3>💾 Gestión de Archivos</h3>
+                <p>Guarda y carga tus árboles:</p>
+                <ul>
+                    <li><strong>Exportar:</strong> Guarda el árbol actual en un archivo JSON</li>
+                    <li><strong>Importar:</strong> Carga un árbol desde un archivo JSON previamente exportado</li>
+                    <li><strong>Limpiar Todo:</strong> Elimina el árbol actual</li>
+                </ul>
+            </div>
+            
+            <div class="help-section">
+                <h3>💡 Ejemplos</h3>
+                <p>Utiliza los ejemplos predefinidos para probar la herramienta rápidamente.</p>
+            </div>
+            
+            <div class="help-section">
+                <h3>ℹ️ Información del Árbol</h3>
+                <p>El panel derecho muestra información útil sobre el árbol:</p>
+                <ul>
+                    <li><strong>Nodos:</strong> Cantidad total de nodos en el árbol</li>
+                    <li><strong>Altura:</strong> Longitud del camino más largo desde la raíz a una hoja</li>
+                    <li><strong>Niveles:</strong> Número de niveles en el árbol (igual a la altura)</li>
+                    <li><strong>Balanceado:</strong> Indica si el árbol está balanceado (diferencia de altura entre subárboles ≤ 1)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <script>
         // CLASE TREE NODE
         class TreeNode {
@@ -592,6 +851,7 @@
                 this.nodeRadius = 30;
                 this.levelHeight = 100;
                 this.treeType = "Ninguno";
+                this.nodeHistory = []; // Para el modo manual
                 
                 this.resizeCanvas();
                 window.addEventListener('resize', () => this.resizeCanvas());
@@ -627,6 +887,116 @@
                 node.left = this._buildBalancedBST(array, start, mid - 1);
                 node.right = this._buildBalancedBST(array, mid + 1, end);
                 
+                return node;
+            }
+
+            // MÉTODOS PARA INSERCIÓN MANUAL
+            insertNode(value, isNumbers = true) {
+                if (!this.root) {
+                    this.root = new TreeNode(value);
+                    this.nodeHistory.push(value);
+                    return;
+                }
+                
+                this._insertNode(this.root, value, isNumbers);
+                this.nodeHistory.push(value);
+            }
+
+            _insertNode(node, value, isNumbers) {
+                if (isNumbers) {
+                    if (value < node.value) {
+                        if (node.left === null) {
+                            node.left = new TreeNode(value);
+                        } else {
+                            this._insertNode(node.left, value, isNumbers);
+                        }
+                    } else if (value > node.value) {
+                        if (node.right === null) {
+                            node.right = new TreeNode(value);
+                        } else {
+                            this._insertNode(node.right, value, isNumbers);
+                        }
+                    }
+                } else {
+                    // Para letras, comparamos como strings
+                    if (value < node.value) {
+                        if (node.left === null) {
+                            node.left = new TreeNode(value);
+                        } else {
+                            this._insertNode(node.left, value, isNumbers);
+                        }
+                    } else if (value > node.value) {
+                        if (node.right === null) {
+                            node.right = new TreeNode(value);
+                        } else {
+                            this._insertNode(node.right, value, isNumbers);
+                        }
+                    }
+                }
+            }
+
+            // MÉTODO PARA ELIMINAR NODO
+            removeNode(value, isNumbers = true) {
+                this.root = this._removeNode(this.root, value, isNumbers);
+                const index = this.nodeHistory.indexOf(value);
+                if (index !== -1) {
+                    this.nodeHistory.splice(index, 1);
+                }
+            }
+
+            _removeNode(node, value, isNumbers) {
+                if (node === null) return null;
+                
+                if (isNumbers) {
+                    if (value < node.value) {
+                        node.left = this._removeNode(node.left, value, isNumbers);
+                    } else if (value > node.value) {
+                        node.right = this._removeNode(node.right, value, isNumbers);
+                    } else {
+                        // Nodo encontrado
+                        if (node.left === null && node.right === null) {
+                            return null;
+                        } else if (node.left === null) {
+                            return node.right;
+                        } else if (node.right === null) {
+                            return node.left;
+                        } else {
+                            // Nodo con dos hijos
+                            const minRight = this._findMinNode(node.right);
+                            node.value = minRight.value;
+                            node.right = this._removeNode(node.right, minRight.value, isNumbers);
+                        }
+                    }
+                } else {
+                    // Para letras
+                    if (value < node.value) {
+                        node.left = this._removeNode(node.left, value, isNumbers);
+                    } else if (value > node.value) {
+                        node.right = this._removeNode(node.right, value, isNumbers);
+                    } else {
+                        // Nodo encontrado
+                        if (node.left === null && node.right === null) {
+                            return null;
+                        } else if (node.left === null) {
+                            return node.right;
+                        } else if (node.right === null) {
+                            return node.left;
+                        } else {
+                            // Nodo con dos hijos
+                            const minRight = this._findMinNode(node.right);
+                            node.value = minRight.value;
+                            node.right = this._removeNode(node.right, minRight.value, isNumbers);
+                        }
+                    }
+                }
+                
+                return node;
+            }
+
+            _findMinNode(node) {
+                while (node.left !== null) {
+                    node = node.left;
+                }
                 return node;
             }
 
@@ -878,7 +1248,22 @@
             clear() {
                 this.root = null;
                 this.treeType = "Ninguno";
+                this.nodeHistory = [];
+                this.updateNodeHistory();
                 this.drawTree();
+            }
+
+            // Actualizar el historial de nodos en la interfaz
+            updateNodeHistory() {
+                const nodeHistoryList = document.getElementById('nodeHistoryList');
+                nodeHistoryList.innerHTML = '';
+                
+                this.nodeHistory.forEach(value => {
+                    const nodeItem = document.createElement('div');
+                    nodeItem.className = 'node-history-item';
+                    nodeItem.textContent = value;
+                    nodeHistoryList.appendChild(nodeItem);
+                });
             }
         }
 
@@ -972,6 +1357,86 @@
                 } catch (error) {
                     showError(`${error.message}`);
                 }
+            });
+
+            // Insertar nodo manualmente
+            document.getElementById('insertNodeBtn').addEventListener('click', () => {
+                const nodeValue = document.getElementById('manualNodeValue').value.trim();
+                const manualType = document.getElementById('manualType').value;
+                
+                try {
+                    if (!nodeValue) {
+                        throw new Error("Por favor, introduce un valor para el nodo");
+                    }
+
+                    let value;
+                    if (manualType === 'numbers') {
+                        value = parseFloat(nodeValue);
+                        if (isNaN(value)) {
+                            throw new Error(`"${nodeValue}" no es un número válido`);
+                        }
+                    } else {
+                        value = nodeValue.toUpperCase();
+                        if (value.length !== 1 || !value.match(/[A-Z]/)) {
+                            throw new Error("Solo se permiten letras individuales de A-Z");
+                        }
+                    }
+
+                    treeVisualizer.insertNode(value, manualType === 'numbers');
+                    treeVisualizer.treeType = `BST Manual (${manualType === 'numbers' ? 'Números' : 'Letras'})`;
+                    treeVisualizer.drawTree();
+                    treeVisualizer.updateNodeHistory();
+                    showSuccess(`Nodo ${value} insertado correctamente`);
+                    updateTraversalResults(treeVisualizer);
+                } catch (error) {
+                    showError(`${error.message}`);
+                }
+            });
+
+            // Eliminar nodo manualmente
+            document.getElementById('removeNodeBtn').addEventListener('click', () => {
+                const nodeValue = document.getElementById('manualNodeValue').value.trim();
+                const manualType = document.getElementById('manualType').value;
+                
+                try {
+                    if (!nodeValue) {
+                        throw new Error("Por favor, introduce un valor para eliminar el nodo");
+                    }
+
+                    let value;
+                    if (manualType === 'numbers') {
+                        value = parseFloat(nodeValue);
+                        if (isNaN(value)) {
+                            throw new Error(`"${nodeValue}" no es un número válido`);
+                        }
+                    } else {
+                        value = nodeValue.toUpperCase();
+                        if (value.length !== 1 || !value.match(/[A-Z]/)) {
+                            throw new Error("Solo se permiten letras individuales de A-Z");
+                        }
+                    }
+
+                    if (!treeVisualizer.root) {
+                        throw new Error("No hay árbol para eliminar nodos");
+                    }
+
+                    treeVisualizer.removeNode(value, manualType === 'numbers');
+                    treeVisualizer.treeType = `BST Manual (${manualType === 'numbers' ? 'Números' : 'Letras'})`;
+                    treeVisualizer.drawTree();
+                    treeVisualizer.updateNodeHistory();
+                    showSuccess(`Nodo ${value} eliminado correctamente`);
+                    updateTraversalResults(treeVisualizer);
+                } catch (error) {
+                    showError(`${error.message}`);
+                }
+            });
+
+            // Limpiar árbol manual
+            document.getElementById('clearManualTreeBtn').addEventListener('click', () => {
+                treeVisualizer.clear();
+                showSuccess('Árbol manual limpiado');
+                hideTraversalResults();
+                hideResults();
             });
 
             // Botones de recorridos
@@ -1069,6 +1534,22 @@
                 document.getElementById('inorderInput').value = 'D,B,E,A,F,C';
                 document.getElementById('postorderInput').value = 'D,E,B,F,C,A';
                 showSuccess('Ejemplo de recorridos cargado. Haz clic en "Reconstruir Árbol"');
+            });
+
+            // Modal de ayuda
+            document.getElementById('helpBtn').addEventListener('click', () => {
+                document.getElementById('helpModal').style.display = 'flex';
+            });
+
+            document.getElementById('closeHelpModal').addEventListener('click', () => {
+                document.getElementById('helpModal').style.display = 'none';
+            });
+
+            // Cerrar modal al hacer clic fuera
+            window.addEventListener('click', (e) => {
+                if (e.target === document.getElementById('helpModal')) {
+                    document.getElementById('helpModal').style.display = 'none';
+                }
             });
 
             // Funciones auxiliares
