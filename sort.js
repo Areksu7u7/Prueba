@@ -5,6 +5,7 @@ const minInput = document.getElementById('minValue');
 const maxInput = document.getElementById('maxValue');
 const randomBtn = document.getElementById('randomBtn');
 const customBtn = document.getElementById('customBtn');
+const clearBtn = document.getElementById('clearBtn');
 const bubbleBtn = document.getElementById('bubbleBtn');
 const insertionBtn = document.getElementById('insertionBtn');
 const shellBtn = document.getElementById('shellBtn');
@@ -19,6 +20,8 @@ const closeCustom = document.getElementById('closeCustom');
 const customNumbers = document.getElementById('customNumbers');
 const confirmCustom = document.getElementById('confirmCustom');
 const cancelCustom = document.getElementById('cancelCustom');
+const ascOrder = document.getElementById('ascOrder');
+const descOrder = document.getElementById('descOrder');
 
 let values = [];
 let sorting = false;
@@ -26,8 +29,35 @@ let animationSpeed = 50;
 let bubbles = [];
 let operationsCount = 0;
 
+// Obtener dirección de ordenamiento
+function getSortOrder() {
+    return descOrder.checked ? 'desc' : 'asc';
+}
+
+// Función de comparación según el orden seleccionado
+function compare(a, b, order = 'asc') {
+    if (order === 'desc') {
+        return a < b; // Para orden descendente
+    }
+    return a > b; // Para orden ascendente
+}
+
+// Limpiar todos los valores
+function clearAll() {
+    if (sorting) return;
+    values = [];
+    operationsCount = 0;
+    render();
+    algoName.textContent = 'Lista vacía - Agrega valores para ordenar';
+}
+
 // Generar valores únicos aleatorios con rango personalizado
-function randomValues(n, min = 1, max = 100) {
+function randomValues(n, min = 0, max = 100) {
+    if (n === 0) {
+        clearAll();
+        return;
+    }
+    
     // Verificar que el rango sea válido
     if (max - min + 1 < n) {
         alert(`Error: El rango (${min}-${max}) debe ser al menos igual a la cantidad de burbujas (${n}).\nMáximo debe ser al menos ${min + n - 1}`);
@@ -76,8 +106,9 @@ function processCustomNumbers() {
                 return parsed;
             });
         
-        if (numberArray.length < 5) {
-            alert('Debes ingresar al menos 5 números');
+        if (numberArray.length === 0) {
+            clearAll();
+            customModal.style.display = 'none';
             return;
         }
         
@@ -102,6 +133,8 @@ function processCustomNumbers() {
 
 // Calcular tamaño proporcional al valor (BURBUJAS MÁS GRANDES)
 function calculateBubbleSize(value, n) {
+    if (n === 0) return 0;
+    
     const minVal = Math.min(...values);
     const maxVal = Math.max(...values);
     const range = maxVal - minVal || 1;
@@ -138,7 +171,14 @@ function calculateFontSize(bubbleSize) {
 function render() {
     bubblesDiv.innerHTML = '';
     const n = values.length;
-    if (n === 0) return;
+    
+    if (n === 0) {
+        const emptyMessage = document.createElement('div');
+        emptyMessage.className = 'empty-message';
+        emptyMessage.textContent = '🎈 No hay burbujas para mostrar. Usa "Generar" o "Personalizar" para agregar valores.';
+        bubblesDiv.appendChild(emptyMessage);
+        return;
+    }
 
     bubbles = [];
     const fragment = document.createDocumentFragment();
@@ -197,11 +237,13 @@ function updateBubbles(active = [], sorted = [], comparing = []) {
 
 // Deshabilitar botones
 function disableButtons(disabled) {
-    const buttons = [bubbleBtn, insertionBtn, shellBtn, mergeBtn, selectionBtn, randomBtn, customBtn];
+    const buttons = [bubbleBtn, insertionBtn, shellBtn, mergeBtn, selectionBtn, randomBtn, customBtn, clearBtn];
     buttons.forEach(btn => (btn.disabled = disabled));
     numInput.disabled = disabled;
     minInput.disabled = disabled;
     maxInput.disabled = disabled;
+    ascOrder.disabled = disabled;
+    descOrder.disabled = disabled;
 }
 
 // Delay adaptativo
@@ -220,6 +262,8 @@ function getAnimationSpeed(n) {
 
 // Calcular valor Big O
 function calculateBigO(algoName, n) {
+    if (n === 0) return 0;
+    
     let bigOValue;
     
     switch(algoName) {
@@ -241,9 +285,16 @@ function calculateBigO(algoName, n) {
 
 // Mostrar información del algoritmo con Big O calculado
 function updateAlgoInfo(name, n) {
+    if (n === 0) {
+        algoName.textContent = '❌ No hay valores para ordenar';
+        return;
+    }
+    
+    const order = getSortOrder();
+    const orderSymbol = order === 'asc' ? '⬆️' : '⬇️';
     const bigOValue = calculateBigO(name, n);
     const operationsText = operationsCount > 0 ? ` | Operaciones: ${operationsCount.toLocaleString()}` : '';
-    algoName.textContent = `${name} - O(${getBigONotation(name)}) [n=${n}] ≈ ${bigOValue.toLocaleString()}${operationsText}`;
+    algoName.textContent = `${name} ${orderSymbol} - O(${getBigONotation(name)}) [n=${n}] ≈ ${bigOValue.toLocaleString()}${operationsText}`;
 }
 
 // Obtener notación Big O
@@ -264,8 +315,14 @@ function getBigONotation(algoName) {
 // ALGORITMOS OPTIMIZADOS
 async function bubbleSort() {
     const n = values.length;
+    if (n === 0) {
+        updateAlgoInfo('Bubble Sort', n);
+        return;
+    }
+    
     animationSpeed = getAnimationSpeed(n);
     operationsCount = 0;
+    const order = getSortOrder();
     
     disableButtons(true);
     sorting = true;
@@ -281,7 +338,7 @@ async function bubbleSort() {
                 updateBubbles([j, j + 1], Array.from({ length: i }, (_, k) => n - 1 - k));
                 await sleep(animationSpeed);
 
-                if (values[j] > values[j + 1]) {
+                if (compare(values[j], values[j + 1], order)) {
                     [values[j], values[j + 1]] = [values[j + 1], values[j]];
                     swapped = true;
                     operationsCount += 3; // Comparación + intercambio
@@ -302,8 +359,14 @@ async function bubbleSort() {
 
 async function insertionSort() {
     const n = values.length;
+    if (n === 0) {
+        updateAlgoInfo('Insertion Sort', n);
+        return;
+    }
+    
     animationSpeed = getAnimationSpeed(n);
     operationsCount = 0;
+    const order = getSortOrder();
     
     disableButtons(true);
     sorting = true;
@@ -314,7 +377,7 @@ async function insertionSort() {
             let j = i - 1;
             operationsCount++; // Asignación
 
-            while (j >= 0 && values[j] > key) {
+            while (j >= 0 && compare(values[j], key, order)) {
                 if (!sorting) return;
                 values[j + 1] = values[j];
                 operationsCount += 2; // Comparación + asignación
@@ -340,8 +403,14 @@ async function insertionSort() {
 
 async function shellSort() {
     const n = values.length;
+    if (n === 0) {
+        updateAlgoInfo('Shell Sort', n);
+        return;
+    }
+    
     animationSpeed = getAnimationSpeed(n);
     operationsCount = 0;
+    const order = getSortOrder();
     
     disableButtons(true);
     sorting = true;
@@ -358,7 +427,7 @@ async function shellSort() {
                 let j = i;
                 operationsCount++; // Asignación
                 
-                while (j >= gap && values[j - gap] > temp) {
+                while (j >= gap && compare(values[j - gap], temp, order)) {
                     if (!sorting) return;
                     values[j] = values[j - gap];
                     operationsCount += 2; // Comparación + asignación
@@ -385,14 +454,20 @@ async function shellSort() {
 
 async function mergeSortMain() {
     const n = values.length;
+    if (n === 0) {
+        updateAlgoInfo('Merge Sort', n);
+        return;
+    }
+    
     animationSpeed = getAnimationSpeed(n);
     operationsCount = 0;
+    const order = getSortOrder();
     
     disableButtons(true);
     sorting = true;
 
     try {
-        await mergeSort(0, n - 1);
+        await mergeSort(0, n - 1, order);
         if (sorting) {
             updateBubbles([], values.map((_, i) => i));
             updateAlgoInfo('Merge Sort', n);
@@ -402,16 +477,16 @@ async function mergeSortMain() {
         disableButtons(false);
     }
 
-    async function mergeSort(start, end) {
+    async function mergeSort(start, end, order) {
         if (start >= end) return;
 
         const mid = Math.floor((start + end) / 2);
-        await mergeSort(start, mid);
-        await mergeSort(mid + 1, end);
-        await merge(start, mid, end);
+        await mergeSort(start, mid, order);
+        await mergeSort(mid + 1, end, order);
+        await merge(start, mid, end, order);
     }
 
-    async function merge(start, mid, end) {
+    async function merge(start, mid, end, order) {
         const left = values.slice(start, mid + 1);
         const right = values.slice(mid + 1, end + 1);
         operationsCount += (left.length + right.length); // Operaciones de slice
@@ -424,7 +499,9 @@ async function mergeSortMain() {
             updateBubbles([k], [], [start + i, mid + 1 + j]);
             await sleep(animationSpeed);
 
-            if (left[i] <= right[j]) {
+            const shouldSwap = order === 'asc' ? left[i] <= right[j] : left[i] >= right[j];
+            
+            if (shouldSwap) {
                 values[k] = left[i];
                 i++;
             } else {
@@ -461,33 +538,39 @@ async function mergeSortMain() {
 
 async function selectionSort() {
     const n = values.length;
+    if (n === 0) {
+        updateAlgoInfo('Selection Sort', n);
+        return;
+    }
+    
     animationSpeed = getAnimationSpeed(n);
     operationsCount = 0;
+    const order = getSortOrder();
     
     disableButtons(true);
     sorting = true;
 
     try {
         for (let i = 0; i < n - 1; i++) {
-            let minIdx = i;
+            let extremeIdx = i;
 
             for (let j = i + 1; j < n; j++) {
                 if (!sorting) return;
                 updateAlgoInfo('Selection Sort', n);
-                updateBubbles([minIdx, j, i], [], [minIdx, j]);
+                updateBubbles([extremeIdx, j, i], [], [extremeIdx, j]);
                 await sleep(animationSpeed);
 
-                if (values[j] < values[minIdx]) {
-                    minIdx = j;
+                if (order === 'asc' ? values[j] < values[extremeIdx] : values[j] > values[extremeIdx]) {
+                    extremeIdx = j;
                 }
                 operationsCount++; // Comparación
             }
 
-            if (minIdx !== i) {
-                [values[i], values[minIdx]] = [values[minIdx], values[i]];
+            if (extremeIdx !== i) {
+                [values[i], values[extremeIdx]] = [values[extremeIdx], values[i]];
                 operationsCount += 3; // Comparación + intercambio
                 updateAlgoInfo('Selection Sort', n);
-                updateBubbles([i, minIdx]);
+                updateBubbles([i, extremeIdx]);
                 await sleep(animationSpeed);
             }
         }
@@ -502,9 +585,14 @@ async function selectionSort() {
 // EVENTOS
 numInput.addEventListener('change', () => {
     let n = parseInt(numInput.value);
-    if (isNaN(n) || n < 5) n = 5;
+    if (isNaN(n) || n < 0) n = 0;
     if (n > 500) n = 500;
     numInput.value = n;
+    
+    if (n === 0) {
+        clearAll();
+        return;
+    }
     
     // Ajustar máximo automáticamente si es necesario
     const min = parseInt(minInput.value);
@@ -518,7 +606,7 @@ numInput.addEventListener('change', () => {
 
 minInput.addEventListener('change', () => {
     let min = parseInt(minInput.value);
-    if (isNaN(min) || min < 1) min = 1;
+    if (isNaN(min) || min < 0) min = 0;
     if (min > 999) min = 999;
     minInput.value = min;
     
@@ -529,16 +617,16 @@ minInput.addEventListener('change', () => {
         maxInput.value = min + 1;
     }
     
-    if (max - min + 1 < n) {
+    if (n > 0 && max - min + 1 < n) {
         maxInput.value = min + n - 1;
     }
     
-    if (!sorting) randomValues(n, min, max);
+    if (!sorting && n > 0) randomValues(n, min, max);
 });
 
 maxInput.addEventListener('change', () => {
     let max = parseInt(maxInput.value);
-    if (isNaN(max) || max < 10) max = 10;
+    if (isNaN(max) || max < 1) max = 1;
     if (max > 1000) max = 1000;
     maxInput.value = max;
     
@@ -547,15 +635,15 @@ maxInput.addEventListener('change', () => {
     
     if (max <= min) {
         minInput.value = max - 1;
-        if (minInput.value < 1) minInput.value = 1;
+        if (minInput.value < 0) minInput.value = 0;
     }
     
-    if (max - min + 1 < n) {
+    if (n > 0 && max - min + 1 < n) {
         alert(`El rango debe ser al menos igual a la cantidad de burbujas (${n}). Máximo ajustado a ${min + n - 1}`);
         maxInput.value = min + n - 1;
     }
     
-    if (!sorting) randomValues(n, min, max);
+    if (!sorting && n > 0) randomValues(n, min, max);
 });
 
 randomBtn.onclick = () => {
@@ -564,18 +652,23 @@ randomBtn.onclick = () => {
     let min = parseInt(minInput.value);
     let max = parseInt(maxInput.value);
     
-    if (isNaN(n) || n < 5) n = 5;
+    if (isNaN(n) || n < 0) n = 0;
     if (n > 500) n = 500;
-    if (isNaN(min) || min < 1) min = 1;
-    if (isNaN(max) || max < 10) max = 100;
+    if (isNaN(min) || min < 0) min = 0;
+    if (isNaN(max) || max < 1) max = 100;
     
     numInput.value = n;
     minInput.value = min;
     maxInput.value = max;
     
-    randomValues(n, min, max);
+    if (n === 0) {
+        clearAll();
+    } else {
+        randomValues(n, min, max);
+    }
 };
 
+clearBtn.onclick = () => !sorting && clearAll();
 customBtn.onclick = () => !sorting && setCustomValues();
 bubbleBtn.onclick = () => !sorting && bubbleSort();
 insertionBtn.onclick = () => !sorting && insertionSort();
@@ -627,5 +720,12 @@ window.addEventListener('resize', () => {
 });
 
 window.addEventListener('load', () => {
-    setTimeout(() => randomValues(parseInt(numInput.value), parseInt(minInput.value), parseInt(maxInput.value)), 100);
+    setTimeout(() => {
+        const n = parseInt(numInput.value);
+        if (n > 0) {
+            randomValues(n, parseInt(minInput.value), parseInt(maxInput.value));
+        } else {
+            clearAll();
+        }
+    }, 100);
 });
