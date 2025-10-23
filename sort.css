@@ -1,347 +1,481 @@
 /* --- Reset y base --- */
-        * {
-            box-sizing: border-box;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        html, body {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
 
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            background: linear-gradient(135deg, #181828 60%, #23234a 100%);
-            color: #fff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-        }
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    background: linear-gradient(135deg, #181828 60%, #23234a 100%);
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+}
 
-        /* --- Título principal --- */
-        h1 {
-            font-size: 2.2rem;
-            margin: 24px 0 10px 0;
-            color: #00f7ff;
-            text-shadow: 0 0 10px #00f7ff55;
-            text-align: center;
-        }
+/* --- Título principal --- */
+h1 {
+    font-size: 2.2rem;
+    margin: 24px 0 10px 0;
+    color: #00f7ff;
+    text-shadow: 0 0 10px #00f7ff55;
+    text-align: center;
+}
 
-        /* --- Controles superiores --- */
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 18px;
-            padding: 0 20px;
-        }
+/* --- Controles superiores --- */
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    padding: 0 20px;
+}
 
-        .controls label {
-            font-size: 1rem;
-            color: #ffd700;
-        }
+.range-controls, .sort-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
 
-        .controls input[type="number"] {
-            width: 70px;
-            padding: 6px;
-            border-radius: 8px;
-            border: 1px solid #00f7ff;
-            background: #23234a;
-            color: #fff;
-            font-size: 1rem;
-            text-align: center;
-            outline: none;
-            transition: border-color 0.2s ease;
-        }
+.controls label {
+    font-size: 1rem;
+    color: #ffd700;
+}
 
-        .controls input[type="number"]:focus {
-            border-color: #ffd700;
-        }
+.controls input[type="number"] {
+    width: 70px;
+    padding: 6px;
+    border-radius: 8px;
+    border: 1px solid #00f7ff;
+    background: #23234a;
+    color: #fff;
+    font-size: 1rem;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
 
-        /* --- Botones --- */
-        .controls button {
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: none;
-            background: linear-gradient(90deg, #00f7ff 60%, #ffd700 100%);
-            color: #222;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 8px #00f7ff33;
-        }
+.controls input[type="number"]:focus {
+    border-color: #ffd700;
+}
 
-        .controls button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px #00f7ff66;
-        }
+/* --- Botones --- */
+.controls button {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(90deg, #00f7ff 60%, #ffd700 100%);
+    color: #222;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px #00f7ff33;
+}
 
-        .controls button:disabled {
-            background: #444;
-            color: #aaa;
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
-        }
+.controls button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px #00f7ff66;
+}
 
-        /* --- Contenedor de burbujas --- */
-        .bubbles {
-            width: 100%;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-            overflow-y: auto;
-            height: 65vh;
-            max-height: 65vh;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 14px;
-            align-content: flex-start;
-        }
+.controls button:disabled {
+    background: #444;
+    color: #aaa;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
 
-        /* --- Globos individuales --- */
-        .bubble {
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #00f7ff, #0066ff);
-            color: #222;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.15s ease;
-            box-shadow:
-                0 4px 15px rgba(0, 247, 255, 0.3),
-                inset 0 2px 8px rgba(255, 255, 255, 0.2);
-            min-width: 50px;
-            min-height: 50px;
-            flex-shrink: 0;
-        }
+/* Botones específicos de algoritmos */
+#bubbleBtn { 
+    background: linear-gradient(90deg, #2196F3, #1976D2); 
+    box-shadow: 0 2px 8px #2196F333;
+}
+#bubbleBtn:hover:not(:disabled) {
+    box-shadow: 0 4px 12px #2196F366;
+}
 
-        /* --- Estados de animación --- */
-        .bubble.active {
-            background: radial-gradient(circle at 30% 30%, #ffd700, #ff6b00);
-            box-shadow:
-                0 0 25px rgba(255, 215, 0, 0.8),
-                0 0 15px rgba(255, 107, 0, 0.6),
-                inset 0 2px 8px rgba(255, 255, 255, 0.3);
-            transform: scale(1.15);
-            border: 2px solid #fff;
-        }
+#selectionBtn { 
+    background: linear-gradient(90deg, #FF9800, #F57C00); 
+    box-shadow: 0 2px 8px #FF980033;
+}
+#selectionBtn:hover:not(:disabled) {
+    box-shadow: 0 4px 12px #FF980066;
+}
 
-        .bubble.sorted {
-            background: radial-gradient(circle at 30% 30%, #00ff88, #00cc66);
-            border: 2px solid #00ff88;
-            box-shadow:
-                0 0 20px rgba(0, 255, 136, 0.6),
-                inset 0 2px 8px rgba(255, 255, 255, 0.2);
-            transform: scale(1.05);
-        }
+#insertionBtn { 
+    background: linear-gradient(90deg, #9C27B0, #7B1FA2); 
+    box-shadow: 0 2px 8px #9C27B033;
+}
+#insertionBtn:hover:not(:disabled) {
+    box-shadow: 0 4px 12px #9C27B066;
+}
 
-        .bubble.comparing {
-            background: radial-gradient(circle at 30% 30%, #ff4444, #cc0000);
-            box-shadow:
-                0 0 20px rgba(255, 68, 68, 0.6),
-                inset 0 2px 8px rgba(255, 255, 255, 0.2);
-            transform: scale(1.1);
-        }
+#shellBtn { 
+    background: linear-gradient(90deg, #009688, #00796B); 
+    box-shadow: 0 2px 8px #00968833;
+}
+#shellBtn:hover:not(:disabled) {
+    box-shadow: 0 4px 12px #00968866;
+}
 
-        /* --- Texto del algoritmo --- */
-        #algoName {
-            margin-top: 18px;
-            font-size: 1.3rem;
-            color: #ffd700;
-            min-height: 30px;
-            text-align: center;
-            font-weight: bold;
-            letter-spacing: 1px;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-        }
+#mergeBtn { 
+    background: linear-gradient(90deg, #f44336, #d32f2f); 
+    box-shadow: 0 2px 8px #f4433633;
+}
+#mergeBtn:hover:not(:disabled) {
+    box-shadow: 0 4px 12px #f4433666;
+}
 
-        /* --- Modal de Ayuda --- */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.8);
-            animation: fadeIn 0.3s;
-        }
+#helpBtn { 
+    background: linear-gradient(90deg, #9b59b6 60%, #e74c3c 100%); 
+    box-shadow: 0 2px 8px #9b59b633;
+}
+#helpBtn:hover:not(:disabled) {
+    box-shadow: 0 4px 12px #9b59b666;
+}
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+#customBtn {
+    background: linear-gradient(90deg, #00ff88, #00cc66);
+    box-shadow: 0 2px 8px #00ff8833;
+}
+#customBtn:hover:not(:disabled) {
+    box-shadow: 0 4px 12px #00ff8866;
+}
 
-        .modal-content {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            margin: 3% auto;
-            padding: 30px;
-            border: 2px solid #00f7ff;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 800px;
-            max-height: 85vh;
-            overflow-y: auto;
-            box-shadow: 0 0 30px rgba(0, 247, 255, 0.5);
-            animation: slideDown 0.4s;
-        }
+/* --- Contenedor de burbujas --- */
+.bubbles {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    overflow-y: auto;
+    height: 65vh;
+    max-height: 65vh;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    align-content: flex-start;
+}
 
-        @keyframes slideDown {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
+/* --- Globos individuales --- */
+.bubble {
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #00f7ff, #0066ff);
+    color: #222;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    box-shadow:
+        0 4px 15px rgba(0, 247, 255, 0.3),
+        inset 0 2px 8px rgba(255, 255, 255, 0.2);
+    min-width: 50px;
+    min-height: 50px;
+    flex-shrink: 0;
+}
 
-        .close {
-            color: #ff4444;
-            float: right;
-            font-size: 35px;
-            font-weight: bold;
-            cursor: pointer;
-            line-height: 20px;
-            transition: color 0.2s;
-        }
+/* --- Estados de animación --- */
+.bubble.active {
+    background: radial-gradient(circle at 30% 30%, #ffd700, #ff6b00);
+    box-shadow:
+        0 0 25px rgba(255, 215, 0, 0.8),
+        0 0 15px rgba(255, 107, 0, 0.6),
+        inset 0 2px 8px rgba(255, 255, 255, 0.3);
+    transform: scale(1.15);
+    border: 2px solid #fff;
+}
 
-        .close:hover {
-            color: #ff0000;
-        }
+.bubble.sorted {
+    background: radial-gradient(circle at 30% 30%, #00ff88, #00cc66);
+    border: 2px solid #00ff88;
+    box-shadow:
+        0 0 20px rgba(0, 255, 136, 0.6),
+        inset 0 2px 8px rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
 
-        .modal-content h2 {
-            color: #00f7ff;
-            text-align: center;
-            margin-bottom: 25px;
-            font-size: 2rem;
-            text-shadow: 0 0 15px rgba(0, 247, 255, 0.6);
-        }
+.bubble.comparing {
+    background: radial-gradient(circle at 30% 30%, #ff4444, #cc0000);
+    box-shadow:
+        0 0 20px rgba(255, 68, 68, 0.6),
+        inset 0 2px 8px rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
 
-        .modal-content h3 {
-            color: #ffd700;
-            margin-top: 25px;
-            margin-bottom: 15px;
-            font-size: 1.4rem;
-            border-bottom: 2px solid #ffd700;
-            padding-bottom: 8px;
-        }
+/* --- Texto del algoritmo --- */
+#algoName {
+    margin-top: 18px;
+    font-size: 1.3rem;
+    color: #ffd700;
+    min-height: 30px;
+    text-align: center;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
 
-        .modal-content h4 {
-            color: #00f7ff;
-            margin-top: 15px;
-            margin-bottom: 10px;
-            font-size: 1.2rem;
-        }
+/* --- Modal de Ayuda --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+    animation: fadeIn 0.3s;
+}
 
-        .help-section {
-            margin-bottom: 25px;
-        }
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
 
-        .help-section p {
-            color: #ddd;
-            line-height: 1.8;
-            margin: 10px 0;
-        }
+.modal-content {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    margin: 3% auto;
+    padding: 30px;
+    border: 2px solid #00f7ff;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 0 30px rgba(0, 247, 255, 0.5);
+    animation: slideDown 0.4s;
+}
 
-        .help-section ul {
-            color: #ddd;
-            line-height: 1.9;
-            margin-left: 20px;
-        }
+@keyframes slideDown {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
 
-        .help-section li {
-            margin: 8px 0;
-        }
+.close {
+    color: #ff4444;
+    float: right;
+    font-size: 35px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 20px;
+    transition: color 0.2s;
+}
 
-        .color-box {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 5px;
-            font-weight: bold;
-            color: #222;
-            margin-right: 5px;
-        }
+.close:hover {
+    color: #ff0000;
+}
 
-        .algo-card {
-            background: rgba(0, 247, 255, 0.05);
-            border-left: 4px solid #00f7ff;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 8px;
-        }
+.modal-content h2 {
+    color: #00f7ff;
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 2rem;
+    text-shadow: 0 0 15px rgba(0, 247, 255, 0.6);
+}
 
-        .algo-card p {
-            margin: 8px 0;
-        }
+.modal-content h3 {
+    color: #ffd700;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+    border-bottom: 2px solid #ffd700;
+    padding-bottom: 8px;
+}
 
-        .algo-card strong {
-            color: #ffd700;
-        }
+.modal-content h4 {
+    color: #00f7ff;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
 
-        /* --- Responsividad --- */
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 1.6rem;
-                margin: 16px 0 8px;
-            }
+.help-section {
+    margin-bottom: 25px;
+}
 
-            .controls {
-                gap: 6px;
-                padding: 0 10px;
-            }
+.help-section p {
+    color: #ddd;
+    line-height: 1.8;
+    margin: 10px 0;
+}
 
-            .controls button {
-                padding: 6px 12px;
-                font-size: 0.9rem;
-            }
+.help-section ul {
+    color: #ddd;
+    line-height: 1.9;
+    margin-left: 20px;
+}
 
-            .bubbles {
-                gap: 8px;
-                padding: 15px 10px;
-            }
+.help-section li {
+    margin: 8px 0;
+}
 
-            .bubble {
-                min-width: 35px;
-                min-height: 35px;
-            }
+.color-box {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-weight: bold;
+    color: #222;
+    margin-right: 5px;
+}
 
-            #algoName {
-                font-size: 1.1rem;
-                margin-top: 12px;
-            }
-        }
+.algo-card {
+    background: rgba(0, 247, 255, 0.05);
+    border-left: 4px solid #00f7ff;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 8px;
+}
 
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 1.3rem;
-            }
+.algo-card p {
+    margin: 8px 0;
+}
 
-            .controls {
-                flex-direction: column;
-                gap: 8px;
-            }
+.algo-card strong {
+    color: #ffd700;
+}
 
-            .bubbles {
-                gap: 6px;
-                padding: 10px 5px;
-            }
+/* Estilos para el modal personalizado */
+#customModal .modal-content {
+    border: 2px solid #00ff88;
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+}
 
-            .bubble {
-                min-width: 30px;
-                min-height: 30px;
-            }
-        }
+#customModal h2 {
+    color: #00ff88;
+    text-shadow: 0 0 15px rgba(0, 255, 136, 0.6);
+}
+
+#customNumbers {
+    background: #23234a;
+    border: 1px solid #00ff88;
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    resize: vertical;
+}
+
+#customNumbers:focus {
+    outline: none;
+    border-color: #ffd700;
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+#confirmCustom {
+    background: linear-gradient(90deg, #00ff88, #00cc66);
+    box-shadow: 0 2px 8px #00ff8833;
+}
+
+#confirmCustom:hover {
+    box-shadow: 0 4px 12px #00ff8866;
+}
+
+#cancelCustom {
+    background: linear-gradient(90deg, #ff4444, #cc0000);
+    box-shadow: 0 2px 8px #ff444433;
+}
+
+#cancelCustom:hover {
+    box-shadow: 0 4px 12px #ff444466;
+}
+
+/* --- Responsividad --- */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.6rem;
+        margin: 16px 0 8px;
+    }
+
+    .controls {
+        gap: 6px;
+        padding: 0 10px;
+    }
+
+    .range-controls, .sort-controls {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .controls button {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+        width: 100%;
+        max-width: 200px;
+    }
+
+    .bubbles {
+        gap: 8px;
+        padding: 15px 10px;
+    }
+
+    .bubble {
+        min-width: 35px;
+        min-height: 35px;
+    }
+
+    #algoName {
+        font-size: 1.1rem;
+        margin-top: 12px;
+    }
+
+    .modal-content {
+        margin: 5% auto;
+        padding: 20px;
+        width: 95%;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.3rem;
+    }
+
+    .controls {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .bubbles {
+        gap: 6px;
+        padding: 10px 5px;
+    }
+
+    .bubble {
+        min-width: 30px;
+        min-height: 30px;
+    }
+
+    .modal-content {
+        padding: 15px;
+    }
+
+    .modal-content h2 {
+        font-size: 1.5rem;
+    }
+
+    .modal-content h3 {
+        font-size: 1.2rem;
+    }
+}

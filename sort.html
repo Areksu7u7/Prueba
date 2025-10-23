@@ -10,15 +10,28 @@
     <h1>Visualizador de Algoritmos de Ordenamiento</h1>
 
     <div class="controls">
-        <label for="numValues">Cantidad de globos:</label>
-        <input type="number" id="numValues" min="5" max="500" value="50">
-        <button id="randomBtn">🎲 Generar</button>
-        <button id="bubbleBtn">Bubble Sort</button>
-        <button id="selectionBtn">Selection Sort</button>
-        <button id="insertionBtn">Insertion Sort</button>
-        <button id="shellBtn">Shell Sort</button>
-        <button id="mergeBtn">Merge Sort</button>
-        <button id="helpBtn" style="background: linear-gradient(90deg, #9b59b6 60%, #e74c3c 100%);">❓ Ayuda</button>
+        <div class="range-controls">
+            <label for="numValues">Cantidad de globos:</label>
+            <input type="number" id="numValues" min="5" max="500" value="50">
+            
+            <label for="minValue">Mínimo:</label>
+            <input type="number" id="minValue" min="1" max="1000" value="1">
+            
+            <label for="maxValue">Máximo:</label>
+            <input type="number" id="maxValue" min="10" max="1000" value="100">
+            
+            <button id="randomBtn">🎲 Generar</button>
+            <button id="customBtn">📝 Personalizar</button>
+        </div>
+        
+        <div class="sort-controls">
+            <button id="bubbleBtn">Bubble Sort</button>
+            <button id="selectionBtn">Selection Sort</button>
+            <button id="insertionBtn">Insertion Sort</button>
+            <button id="shellBtn">Shell Sort</button>
+            <button id="mergeBtn">Merge Sort</button>
+            <button id="helpBtn" style="background: linear-gradient(90deg, #9b59b6 60%, #e74c3c 100%);">❓ Ayuda</button>
+        </div>
     </div>
 
     <div class="bubbles" id="bubbles"></div>
@@ -39,7 +52,9 @@
                 <h3>🎮 Controles Básicos</h3>
                 <ul>
                     <li><strong>Cantidad de globos:</strong> Escribe un número entre 5 y 500 para elegir cuántas burbujas ordenar.</li>
+                    <li><strong>Rango de valores:</strong> Define el valor mínimo y máximo para los números aleatorios.</li>
                     <li><strong>🎲 Generar:</strong> Crea un nuevo conjunto de valores aleatorios sin repetir.</li>
+                    <li><strong>📝 Personalizar:</strong> Ingresa tu propia lista de números separados por comas.</li>
                 </ul>
             </div>
 
@@ -99,7 +114,24 @@
                     <li>Usa <strong>100+ burbujas</strong> para notar la diferencia de velocidad entre algoritmos.</li>
                     <li>Los algoritmos O(n log n) como <strong>Merge Sort</strong> son mucho más rápidos con grandes cantidades.</li>
                     <li>Si hay muchas burbujas, usa el <strong>scroll</strong> para verlas todas.</li>
+                    <li>El rango máximo debe ser al menos igual a la cantidad de burbujas para evitar repeticiones.</li>
                 </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para ingresar números personalizados -->
+    <div id="customModal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <span class="close" id="closeCustom">&times;</span>
+            <h2>📝 Ingresar Números Personalizados</h2>
+            <div class="help-section">
+                <p>Ingresa tus números separados por comas (ej: 5,2,8,1,9):</p>
+                <textarea id="customNumbers" rows="6" placeholder="Ejemplo: 5,2,8,1,9,3,7,4,6,10" style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid #4CAF50; font-size: 16px;"></textarea>
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    <button id="confirmCustom" style="background: #4CAF50;">✅ Aceptar</button>
+                    <button id="cancelCustom" style="background: #f44336;">❌ Cancelar</button>
+                </div>
             </div>
         </div>
     </div>
