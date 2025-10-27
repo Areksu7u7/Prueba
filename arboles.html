@@ -542,6 +542,60 @@
             background: radial-gradient(circle, var(--warning), #d97706) !important;
         }
 
+        /* Mejoras para la sección de recorridos */
+        .reconstruction-method {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .method-btn {
+            flex: 1;
+            padding: 10px;
+            background: rgba(0, 247, 255, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            color: var(--text);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .method-btn.active {
+            background: var(--primary);
+            color: var(--background);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .method-btn:hover:not(.active) {
+            background: rgba(0, 247, 255, 0.2);
+        }
+
+        .traversal-inputs {
+            display: none;
+        }
+
+        .traversal-inputs.active {
+            display: block;
+        }
+
+        .traversal-explanation {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 3px solid var(--primary);
+            font-size: 0.9rem;
+        }
+
+        .traversal-explanation h4 {
+            color: var(--primary);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         /* Modal de ayuda */
         .modal-overlay {
             position: fixed;
@@ -712,6 +766,10 @@
             .examples {
                 grid-template-columns: 1fr;
             }
+            
+            .reconstruction-method {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -765,35 +823,64 @@
                     </button>
                 </div>
                 
-                <!-- Modo Recorridos -->
+                <!-- Modo Recorridos - MEJORADO -->
                 <div class="tab-content" id="traversalsTab">
                     <div class="alert alert-warning">
                         <span>ℹ️</span>
-                        <div>INORDEN es obligatorio + PREORDEN o POSTORDEN</div>
+                        <div>Selecciona un método de reconstrucción y proporciona los recorridos necesarios</div>
                     </div>
                     
-                    <div class="input-group">
-                        <label for="preorderInput">Preorden (Raíz-Izq-Der):</label>
-                        <input type="text" id="preorderInput" placeholder="Ej: A,B,D,E,C,F">
+                    <!-- Selector de método de reconstrucción -->
+                    <div class="reconstruction-method">
+                        <div class="method-btn active" data-method="preorder-inorder">
+                            Preorden + Inorden
+                        </div>
+                        <div class="method-btn" data-method="inorder-postorder">
+                            Inorden + Postorden
+                        </div>
                     </div>
                     
-                    <div class="input-group">
-                        <label for="inorderInput">Inorden (Izq-Raíz-Der) *OBLIGATORIO:</label>
-                        <input type="text" id="inorderInput" placeholder="Ej: D,B,E,A,F,C">
+                    <!-- Explicación del método seleccionado -->
+                    <div class="traversal-explanation" id="traversalExplanation">
+                        <h4>📋 Preorden + Inorden</h4>
+                        <p>Proporciona los recorridos <strong>Preorden</strong> y <strong>Inorden</strong> para reconstruir el árbol único.</p>
+                        <p><strong>Preorden:</strong> Raíz → Izquierda → Derecha</p>
+                        <p><strong>Inorden:</strong> Izquierda → Raíz → Derecha</p>
                     </div>
                     
-                    <div class="input-group">
-                        <label for="postorderInput">Postorden (Izq-Der-Raíz):</label>
-                        <input type="text" id="postorderInput" placeholder="Ej: D,E,B,F,C,A">
+                    <!-- Campos para Preorden + Inorden -->
+                    <div class="traversal-inputs active" id="preorderInorderInputs">
+                        <div class="input-group">
+                            <label for="preorderInput">Preorden (Raíz-Izq-Der):</label>
+                            <input type="text" id="preorderInput" placeholder="Ej: A,B,D,E,C,F">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="inorderInput">Inorden (Izq-Raíz-Der):</label>
+                            <input type="text" id="inorderInput" placeholder="Ej: D,B,E,A,F,C">
+                        </div>
+                        
+                        <button class="btn" id="reconstructFromPreInBtn">
+                            🔄 RECONSTRUIR DESDE PREORDEN+INORDEN
+                        </button>
                     </div>
                     
-                    <button class="btn" id="reconstructTreeBtn">
-                        🔄 RECONSTRUIR DESDE PREORDEN+INORDEN
-                    </button>
-                    
-                    <button class="btn btn-secondary" id="buildFromInorderPostorderBtn">
-                        🔄 RECONSTRUIR DESDE INORDEN+POSTORDEN
-                    </button>
+                    <!-- Campos para Inorden + Postorden -->
+                    <div class="traversal-inputs" id="inorderPostorderInputs">
+                        <div class="input-group">
+                            <label for="inorderInput2">Inorden (Izq-Raíz-Der):</label>
+                            <input type="text" id="inorderInput2" placeholder="Ej: D,B,E,A,F,C">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="postorderInput">Postorden (Izq-Der-Raíz):</label>
+                            <input type="text" id="postorderInput" placeholder="Ej: D,E,B,F,C,A">
+                        </div>
+                        
+                        <button class="btn" id="reconstructFromInPostBtn">
+                            🔄 RECONSTRUIR DESDE INORDEN+POSTORDEN
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Modo Operaciones -->
@@ -1566,6 +1653,42 @@
                 }
             });
 
+            // MEJORA: Selector de método de reconstrucción
+            document.querySelectorAll('.method-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Remove active class from all method buttons
+                    document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    const method = this.getAttribute('data-method');
+                    
+                    // Hide all traversal inputs
+                    document.querySelectorAll('.traversal-inputs').forEach(input => {
+                        input.classList.remove('active');
+                    });
+                    
+                    // Show selected traversal inputs
+                    if (method === 'preorder-inorder') {
+                        document.getElementById('preorderInorderInputs').classList.add('active');
+                        document.getElementById('traversalExplanation').innerHTML = `
+                            <h4>📋 Preorden + Inorden</h4>
+                            <p>Proporciona los recorridos <strong>Preorden</strong> y <strong>Inorden</strong> para reconstruir el árbol único.</p>
+                            <p><strong>Preorden:</strong> Raíz → Izquierda → Derecha</p>
+                            <p><strong>Inorden:</strong> Izquierda → Raíz → Derecha</p>
+                        `;
+                    } else if (method === 'inorder-postorder') {
+                        document.getElementById('inorderPostorderInputs').classList.add('active');
+                        document.getElementById('traversalExplanation').innerHTML = `
+                            <h4>📊 Inorden + Postorden</h4>
+                            <p>Proporciona los recorridos <strong>Inorden</strong> y <strong>Postorden</strong> para reconstruir el árbol único.</p>
+                            <p><strong>Inorden:</strong> Izquierda → Raíz → Derecha</p>
+                            <p><strong>Postorden:</strong> Izquierda → Derecha → Raíz</p>
+                        `;
+                    }
+                });
+            });
+
             // Construir desde Array
             document.getElementById('buildFromArrayBtn').addEventListener('click', () => {
                 const arrayInput = document.getElementById('arrayInput').value;
@@ -1607,7 +1730,7 @@
             });
 
             // Reconstruir desde Preorden + Inorden
-            document.getElementById('reconstructTreeBtn').addEventListener('click', () => {
+            document.getElementById('reconstructFromPreInBtn').addEventListener('click', () => {
                 const preorder = document.getElementById('preorderInput').value.split(',').map(s => s.trim()).filter(s => s);
                 const inorder = document.getElementById('inorderInput').value.split(',').map(s => s.trim()).filter(s => s);
                 
@@ -1624,8 +1747,8 @@
             });
 
             // Reconstruir desde Inorden + Postorden
-            document.getElementById('buildFromInorderPostorderBtn').addEventListener('click', () => {
-                const inorder = document.getElementById('inorderInput').value.split(',').map(s => s.trim()).filter(s => s);
+            document.getElementById('reconstructFromInPostBtn').addEventListener('click', () => {
+                const inorder = document.getElementById('inorderInput2').value.split(',').map(s => s.trim()).filter(s => s);
                 const postorder = document.getElementById('postorderInput').value.split(',').map(s => s.trim()).filter(s => s);
                 
                 try {
@@ -1873,10 +1996,18 @@
             });
 
             document.getElementById('exampleTraversalsBtn').addEventListener('click', () => {
-                document.getElementById('preorderInput').value = 'A,B,D,E,C,F';
-                document.getElementById('inorderInput').value = 'D,B,E,A,F,C';
-                document.getElementById('postorderInput').value = 'D,E,B,F,C,A';
-                showSuccess('Ejemplo de recorridos cargado. Haz clic en "RECONSTRUIR ÁRBOL"');
+                // Cargar ejemplo según el método seleccionado
+                const activeMethod = document.querySelector('.method-btn.active').getAttribute('data-method');
+                
+                if (activeMethod === 'preorder-inorder') {
+                    document.getElementById('preorderInput').value = 'A,B,D,E,C,F';
+                    document.getElementById('inorderInput').value = 'D,B,E,A,F,C';
+                    showSuccess('Ejemplo de Preorden+Inorden cargado. Haz clic en "RECONSTRUIR ÁRBOL"');
+                } else {
+                    document.getElementById('inorderInput2').value = 'D,B,E,A,F,C';
+                    document.getElementById('postorderInput').value = 'D,E,B,F,C,A';
+                    showSuccess('Ejemplo de Inorden+Postorden cargado. Haz clic en "RECONSTRUIR ÁRBOL"');
+                }
             });
 
             document.getElementById('exampleComplexTreeBtn').addEventListener('click', () => {
