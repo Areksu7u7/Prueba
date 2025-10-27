@@ -10,9 +10,13 @@
     <h1>Visualizador de Algoritmos de Ordenamiento</h1>
 
     <div class="controls">
+        <!-- Botón para volver a Grafos (misma ventana) - heredará estilos de .controls button -->
+        <button id="backToGrafosBtn" title="Volver a Grafos" onclick="window.location.href='grafos johnson.html'">Volver a Grafos</button>
+
+        
         <div class="range-controls">
             <label for="numValues">Cantidad de globos:</label>
-            <input type="number" id="numValues" min="0" max="500" value="50">
+            <input type="number" id="numValues" min="0" max="1000" value="50">
             
             <label for="minValue">Mínimo:</label>
             <input type="number" id="minValue" min="0" max="1000" value="1">
@@ -60,7 +64,7 @@
             <div class="help-section">
                 <h3>🎮 Controles Básicos</h3>
                 <ul>
-                    <li><strong>Cantidad de globos:</strong> Escribe un número entre 0 y 500 (0 para vacío).</li>
+                    <li><strong>Cantidad de globos:</strong> Escribe un número entre 0 y 1000 (0 para vacío).</li>
                     <li><strong>Rango de valores:</strong> Define el valor mínimo y máximo para los números aleatorios.</li>
                     <li><strong>🎲 Generar:</strong> Crea un nuevo conjunto de valores aleatorios sin repetir.</li>
                     <li><strong>📝 Personalizar:</strong> Ingresa tu propia lista de números separados por comas.</li>

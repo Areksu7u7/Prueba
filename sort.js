@@ -112,8 +112,8 @@ function processCustomNumbers() {
             return;
         }
         
-        if (numberArray.length > 500) {
-            alert('Máximo 500 números permitidos');
+        if (numberArray.length > 1000) {
+            alert('Máximo 1000 números permitidos');
             return;
         }
         
@@ -586,7 +586,7 @@ async function selectionSort() {
 numInput.addEventListener('change', () => {
     let n = parseInt(numInput.value);
     if (isNaN(n) || n < 0) n = 0;
-    if (n > 500) n = 500;
+    if (n > 1000) n = 1000;
     numInput.value = n;
     
     if (n === 0) {
@@ -653,7 +653,7 @@ randomBtn.onclick = () => {
     let max = parseInt(maxInput.value);
     
     if (isNaN(n) || n < 0) n = 0;
-    if (n > 500) n = 500;
+    if (n > 1000) n = 1000;
     if (isNaN(min) || min < 0) min = 0;
     if (isNaN(max) || max < 1) max = 100;
     

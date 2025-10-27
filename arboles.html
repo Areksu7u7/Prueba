@@ -776,8 +776,10 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🌳 VISUALIZADOR TRON | ÁRBOLES BINARIOS</h1>
+            <h1>🌳 VISUALIZADOR | ÁRBOLES BINARIOS</h1>
             <p>Construye, visualiza y analiza árboles binarios de forma interactiva</p>
+            <!-- Botón volver a Grafos: estilo coherente con otros botones y posición top-left -->
+            <button class="btn btn-secondary" id="backToGrafosBtn" title="Volver a Grafos" onclick="window.location.href='grafos johnson.html'" style="position:absolute; top:16px; left:16px; width:44px; height:44px; padding:0; display:flex; align-items:center; justify-content:center;">⤺</button>
             <button class="help-btn" id="helpBtn">?</button>
         </div>
         
@@ -821,6 +823,15 @@
                     <button class="btn btn-success" id="buildFromArrayBtn">
                         🌳 CREAR ÁRBOL BINARIO
                     </button>
+
+                    <!-- Añadir un solo valor directamente al árbol -->
+                    <div class="input-group">
+                        <label for="addSingleValueInput">Añadir un solo valor al árbol:</label>
+                        <input type="text" id="addSingleValueInput" placeholder="Ej: 7 o G">
+                        <button class="btn btn-success" id="addSingleValueBtn">
+                            ➕ AÑADIR AL ÁRBOL
+                        </button>
+                    </div>
                 </div>
                 
                 <!-- Modo Recorridos - MEJORADO -->
@@ -1160,18 +1171,41 @@
             }
 
             // MÉTODO PARA CREAR BST DESDE ARRAY
+            // Ahora usa el primer elemento del array como raíz y va insertando
+            // los elementos restantes en el orden dado (no ordena el array).
             buildBSTFromArray(array, isNumbers = true) {
-                if (array.length === 0) return null;
-                
-                // Ordenar el array para crear un BST balanceado
-                let sortedArray;
-                if (isNumbers) {
-                    sortedArray = [...array].sort((a, b) => a - b);
-                } else {
-                    sortedArray = [...array].sort();
+                if (!array || array.length === 0) return null;
+
+                // Crear la raíz con el primer elemento del array
+                const rootVal = array[0];
+                const rootNode = new TreeNode(rootVal);
+
+                // Insertar el resto de elementos en el orden provisto
+                for (let i = 1; i < array.length; i++) {
+                    const val = array[i];
+                    // Usar la lógica de insertNode para mantener coherencia
+                    const newNode = new TreeNode(val);
+                    this._insertIntoRoot(rootNode, newNode);
                 }
-                
-                return this._buildBalancedBST(sortedArray, 0, sortedArray.length - 1);
+
+                return rootNode;
+            }
+
+            // Helper que inserta partiendo de una raíz dada (no modifica this.root)
+            _insertIntoRoot(root, newNode) {
+                if (newNode.value < root.value) {
+                    if (root.left === null) {
+                        root.left = newNode;
+                    } else {
+                        this._insertIntoRoot(root.left, newNode);
+                    }
+                } else {
+                    if (root.right === null) {
+                        root.right = newNode;
+                    } else {
+                        this._insertIntoRoot(root.right, newNode);
+                    }
+                }
             }
 
             _buildBalancedBST(array, start, end) {
@@ -1729,6 +1763,44 @@
                 }
             });
 
+            // Añadir un solo valor directamente al árbol (desde la pestaña Array)
+            document.getElementById('addSingleValueBtn').addEventListener('click', () => {
+                const raw = document.getElementById('addSingleValueInput').value.trim();
+                const arrayType = document.getElementById('arrayType').value;
+
+                if (!raw) {
+                    showError('Ingrese un valor para añadir');
+                    return;
+                }
+
+                try {
+                    let value;
+                    if (arrayType === 'numbers') {
+                        value = parseFloat(raw);
+                        if (isNaN(value)) {
+                            showError('Ingrese un número válido');
+                            return;
+                        }
+                    } else {
+                        const v = raw.toUpperCase();
+                        if (v.length !== 1 || !v.match(/^[A-Z]$/)) {
+                            showError('Ingrese una sola letra A-Z');
+                            return;
+                        }
+                        value = v;
+                    }
+
+                    // Insertar en el árbol usando el método existente
+                    treeVisualizer.insert(value);
+                    treeVisualizer.treeType = `BST (${arrayType === 'numbers' ? 'Números' : 'Letras'})`;
+                    showSuccess(`Valor ${value} insertado en el árbol`);
+                    updateTraversalResults(treeVisualizer);
+                    document.getElementById('addSingleValueInput').value = '';
+                } catch (err) {
+                    showError(`Error al insertar: ${err.message}`);
+                }
+            });
+
             // Reconstruir desde Preorden + Inorden
             document.getElementById('reconstructFromPreInBtn').addEventListener('click', () => {
                 const preorder = document.getElementById('preorderInput').value.split(',').map(s => s.trim()).filter(s => s);
@@ -1904,32 +1976,42 @@
 
             // Animación de recorridos
             document.getElementById('animateTraversalBtn').addEventListener('click', () => {
-                if (!treeVisualizer.root) {
-                    showError('No hay árbol para animar');
-                    return;
-                }
-                
-                // Mostrar diálogo para seleccionar tipo de recorrido
-                const traversalType = prompt('Selecciona el tipo de recorrido:\n1. Preorden\n2. Inorden\n3. Postorden', '1');
-                
-                let type;
-                switch (traversalType) {
-                    case '1':
-                        type = 'preorder';
-                        break;
-                    case '2':
-                        type = 'inorder';
-                        break;
-                    case '3':
-                        type = 'postorder';
-                        break;
-                    default:
-                        showError('Tipo de recorrido no válido');
+                try {
+                    if (!treeVisualizer.root) {
+                        showError('No hay árbol para animar');
                         return;
+                    }
+
+                    // Mostrar diálogo para seleccionar tipo de recorrido
+                    const traversalType = prompt('Selecciona el tipo de recorrido:\n1. Preorden\n2. Inorden\n3. Postorden', '1');
+
+                    if (traversalType === null) {
+                        // Usuario canceló el prompt
+                        showWarning('Animación cancelada');
+                        return;
+                    }
+
+                    let type;
+                    switch (traversalType) {
+                        case '1':
+                            type = 'preorder';
+                            break;
+                        case '2':
+                            type = 'inorder';
+                            break;
+                        case '3':
+                            type = 'postorder';
+                            break;
+                        default:
+                            showError('Tipo de recorrido no válido');
+                            return;
+                    }
+
+                    treeVisualizer.animateTraversal(type);
+                    showSuccess(`Animando recorrido ${type}`);
+                } catch (err) {
+                    showError(`Error al animar recorrido: ${err.message}`);
                 }
-                
-                treeVisualizer.animateTraversal(type);
-                showSuccess(`Animando recorrido ${type}`);
             });
 
             // Exportar árbol
@@ -1986,34 +2068,47 @@
             document.getElementById('exampleArrayNumbersBtn').addEventListener('click', () => {
                 document.getElementById('arrayInput').value = '5,3,7,1,9,2,8,4,6';
                 document.getElementById('arrayType').value = 'numbers';
-                showSuccess('Ejemplo de números cargado. Haz clic en "CREAR ÁRBOL BINARIO"');
+                showSuccess('Ejemplo de números cargado. Creando árbol...');
+                // Construir automáticamente
+                document.getElementById('buildFromArrayBtn').click();
             });
 
             document.getElementById('exampleArrayLettersBtn').addEventListener('click', () => {
                 document.getElementById('arrayInput').value = 'D,B,F,A,C,E,G';
                 document.getElementById('arrayType').value = 'letters';
-                showSuccess('Ejemplo de letras cargado. Haz clic en "CREAR ÁRBOL BINARIO"');
+                showSuccess('Ejemplo de letras cargado. Creando árbol...');
+                // Construir automáticamente
+                document.getElementById('buildFromArrayBtn').click();
             });
 
             document.getElementById('exampleTraversalsBtn').addEventListener('click', () => {
-                // Cargar ejemplo según el método seleccionado
-                const activeMethod = document.querySelector('.method-btn.active').getAttribute('data-method');
-                
-                if (activeMethod === 'preorder-inorder') {
-                    document.getElementById('preorderInput').value = 'A,B,D,E,C,F';
-                    document.getElementById('inorderInput').value = 'D,B,E,A,F,C';
-                    showSuccess('Ejemplo de Preorden+Inorden cargado. Haz clic en "RECONSTRUIR ÁRBOL"');
-                } else {
-                    document.getElementById('inorderInput2').value = 'D,B,E,A,F,C';
-                    document.getElementById('postorderInput').value = 'D,E,B,F,C,A';
-                    showSuccess('Ejemplo de Inorden+Postorden cargado. Haz clic en "RECONSTRUIR ÁRBOL"');
+                try {
+                    // Cargar ejemplo según el método seleccionado
+                    const activeBtn = document.querySelector('.method-btn.active');
+                    const activeMethod = activeBtn ? activeBtn.getAttribute('data-method') : 'preorder-inorder';
+
+                    if (activeMethod === 'preorder-inorder') {
+                        document.getElementById('preorderInput').value = 'A,B,D,E,C,F';
+                        document.getElementById('inorderInput').value = 'D,B,E,A,F,C';
+                        showSuccess('Ejemplo de Preorden+Inorden cargado. Reconstruyendo...');
+                        document.getElementById('reconstructFromPreInBtn').click();
+                    } else {
+                        document.getElementById('inorderInput2').value = 'D,B,E,A,F,C';
+                        document.getElementById('postorderInput').value = 'D,E,B,F,C,A';
+                        showSuccess('Ejemplo de Inorden+Postorden cargado. Reconstruyendo...');
+                        document.getElementById('reconstructFromInPostBtn').click();
+                    }
+                } catch (err) {
+                    showError(`Error al cargar ejemplo de recorridos: ${err.message}`);
                 }
             });
 
             document.getElementById('exampleComplexTreeBtn').addEventListener('click', () => {
                 document.getElementById('arrayInput').value = '50,30,70,20,40,60,80,10,25,35,45,55,65,75,85,5,15,23,27,33,37,43,47,53,57,63,67,73,77,83,87';
                 document.getElementById('arrayType').value = 'numbers';
-                showSuccess('Ejemplo de árbol complejo cargado. Haz clic en "CREAR ÁRBOL BINARIO"');
+                showSuccess('Ejemplo de árbol complejo cargado. Creando árbol...');
+                // Construir automáticamente
+                document.getElementById('buildFromArrayBtn').click();
             });
 
             // Funciones auxiliares
