@@ -6,6 +6,8 @@ let isJohnsonMode = false; // Nuevo: Estado del modo
 let isKruskalMode = false; // Nuevo: Estado del modo Kruskal (todas aristas no dirigidas)
 // Guarda IDs seleccionados por Kruskal (MST)
 let lastKruskalSelectedIds = new Set();
+// Preferencia para Kruskal: 'min' (árbol mínimo) o 'max' (árbol máximo)
+let kruskalPreference = 'min';
 
 /* ===== REFERENCIAS DOM ===== */
 const canvas = document.getElementById('canvas'), svg = canvas.querySelector('svg');
@@ -681,7 +683,8 @@ function performExport(name) {
         // Guardar estado Kruskal y aristas seleccionadas
         kruskalAnalysis: {
             isKruskalMode: isKruskalMode,
-            selectedIds: Array.from(lastKruskalSelectedIds)
+            selectedIds: Array.from(lastKruskalSelectedIds),
+            preference: kruskalPreference
         }
     };
     
@@ -750,6 +753,7 @@ document.getElementById('loadGraph').addEventListener('click', () => {
             if (data.kruskalAnalysis) {
                 isKruskalMode = !!data.kruskalAnalysis.isKruskalMode;
                 lastKruskalSelectedIds = new Set(data.kruskalAnalysis.selectedIds || []);
+                kruskalPreference = data.kruskalAnalysis.preference || 'min';
                 // actualizar botón Kruskal si existe
                 const kbtn = document.getElementById('toggleKruskal');
                 if (kbtn) {
@@ -760,6 +764,31 @@ document.getElementById('loadGraph').addEventListener('click', () => {
                 if (isKruskalMode) {
                     document.querySelectorAll('.edge-type-option').forEach(b=>{ try{ b.disabled = true; b.classList.add('disabled'); }catch(e){} });
                     if (edgeTypeDropdown) edgeTypeDropdown.disabled = true;
+                    // Aplicar política (forzar no dirigidas y resolver duplicados según preferencia)
+                    enforceKruskalEdgePolicy();
+                    // Asegurar que el selector de preferencia exista si hay controles disponibles
+                    const rightControls = document.querySelector('.right-controls');
+                    if (rightControls) {
+                        let prefSelect = document.getElementById('kruskalModeSelect');
+                        if (!prefSelect) {
+                            prefSelect = document.createElement('select');
+                            prefSelect.id = 'kruskalModeSelect';
+                            prefSelect.className = 'tab-btn';
+                            prefSelect.title = 'Preferencia Kruskal: minimizar (MST) o maximizar (MaxST)';
+                            const optMin = document.createElement('option'); optMin.value = 'min'; optMin.text = 'Minimizar';
+                            const optMax = document.createElement('option'); optMax.value = 'max'; optMax.text = 'Maximizar';
+                            prefSelect.appendChild(optMin); prefSelect.appendChild(optMax);
+                            prefSelect.value = kruskalPreference;
+                            prefSelect.addEventListener('change', () => {
+                                kruskalPreference = prefSelect.value;
+                                enforceKruskalEdgePolicy();
+                                updateEdges();
+                            });
+                            rightControls.appendChild(prefSelect);
+                        } else {
+                            prefSelect.value = kruskalPreference;
+                        }
+                    }
                 }
             }
             
@@ -1392,33 +1421,8 @@ function toggleKruskalMode() {
 
     // Convertir aristas existentes a no dirigidas y resolver conflictos bidireccionales
     if (isKruskalMode) {
-        // Mapear pares undirected a lista de aristas
-        const pairMap = new Map();
-        edges.forEach(e => {
-            const a = Math.min(e.from, e.to), b = Math.max(e.from, e.to);
-            const key = `${a}-${b}`;
-            if (!pairMap.has(key)) pairMap.set(key, []);
-            pairMap.get(key).push(e);
-        });
-        // Para cada par con múltiples aristas (p.ej. ida y vuelta), conservar la de menor peso
-        const toRemoveIds = new Set();
-        pairMap.forEach(list => {
-            if (list.length > 1) {
-                // seleccionar la de menor peso (convertir weight a número)
-                let minEdge = list[0];
-                list.forEach(ed => {
-                    const w = typeof ed.weight === 'number' ? ed.weight : Number(ed.weight || 0);
-                    const minW = typeof minEdge.weight === 'number' ? minEdge.weight : Number(minEdge.weight || 0);
-                    if (w < minW) minEdge = ed;
-                });
-                list.forEach(ed => { if (ed.id !== minEdge.id) toRemoveIds.add(ed.id); });
-            }
-        });
-        if (toRemoveIds.size) {
-            edges = edges.filter(e => !toRemoveIds.has(e.id));
-        }
-        // Forzar no dirigida en todas las aristas
-        edges.forEach(e => { e.directed = false; e.bidirectional = false; });
+        // Aplicar política Kruskal (forzar no dirigidas y resolver duplicados según preferencia)
+        enforceKruskalEdgePolicy();
     }
 
     // Deshabilitar/rehabilitar controles de tipo de arista según modo Kruskal
@@ -1441,10 +1445,34 @@ function toggleKruskalMode() {
             solveBtn.addEventListener('click', resolveKruskal);
             rightControls.appendChild(solveBtn);
         }
+
+        // Crear selector de preferencia (min/max) si no existe
+        let prefSelect = document.getElementById('kruskalModeSelect');
+        if (!prefSelect) {
+            prefSelect = document.createElement('select');
+            prefSelect.id = 'kruskalModeSelect';
+            prefSelect.className = 'tab-btn';
+            prefSelect.title = 'Preferencia Kruskal: minimizar (MST) o maximizar (MaxST)';
+            const optMin = document.createElement('option'); optMin.value = 'min'; optMin.text = 'Minimizar';
+            const optMax = document.createElement('option'); optMax.value = 'max'; optMax.text = 'Maximizar';
+            prefSelect.appendChild(optMin); prefSelect.appendChild(optMax);
+            prefSelect.value = kruskalPreference;
+            prefSelect.addEventListener('change', () => {
+                kruskalPreference = prefSelect.value;
+                // Reaplicar política Kruskal sobre aristas existentes cuando cambie la preferencia
+                enforceKruskalEdgePolicy();
+                updateEdges();
+            });
+            rightControls.appendChild(prefSelect);
+        } else {
+            prefSelect.value = kruskalPreference;
+        }
     } else {
         // eliminar botón y limpiar resaltado
         if (solveBtn) solveBtn.remove();
         clearKruskalHighlight();
+        // eliminar selector si existe
+        const pref = document.getElementById('kruskalModeSelect'); if (pref) pref.remove();
     }
     // Redibujar aristas para aplicar/revertir marcadores visuales según modo
     updateEdges();
@@ -1469,7 +1497,8 @@ async function resolveKruskal() {
     });
 
     // Ordenar por peso ascendente
-    edgeList.sort((x,y) => x.weight - y.weight);
+    // Orden según preferencia: 'min' -> ascendente (MST), 'max' -> descendente (MaxST)
+    edgeList.sort((x,y) => kruskalPreference === 'max' ? y.weight - x.weight : x.weight - y.weight);
 
     // Union-Find
     const parent = new Map();
@@ -2721,4 +2750,42 @@ function generarTablaMatriz(matriz, tipo, resultado) {
     html += '</table>';
 
     return html;
+}
+
+// Aplica la política Kruskal sobre el array `edges` en memoria:
+// - Fuerza todas las aristas a no dirigidas
+// - Para pares de nodos con múltiples aristas, conserva la arista según `kruskalPreference`
+function enforceKruskalEdgePolicy() {
+    // Mapear pares undirected a lista de aristas
+    const pairMap = new Map();
+    edges.forEach(e => {
+        const a = Math.min(e.from, e.to), b = Math.max(e.from, e.to);
+        const key = `${a}-${b}`;
+        if (!pairMap.has(key)) pairMap.set(key, []);
+        pairMap.get(key).push(e);
+    });
+    const toRemoveIds = new Set();
+    pairMap.forEach(list => {
+        if (list.length > 1) {
+            // elegir la arista a conservar según preferencia
+            let keeper = list[0];
+            list.forEach(ed => {
+                const w = typeof ed.weight === 'number' ? ed.weight : Number(ed.weight || 0);
+                const kw = typeof keeper.weight === 'number' ? keeper.weight : Number(keeper.weight || 0);
+                if (kruskalPreference === 'max') {
+                    if (w > kw) keeper = ed;
+                } else {
+                    if (w < kw) keeper = ed;
+                }
+            });
+            list.forEach(ed => { if (ed.id !== keeper.id) toRemoveIds.add(ed.id); });
+        }
+    });
+    if (toRemoveIds.size) {
+        // Eliminar visualmente los paths correspondientes
+        toRemoveIds.forEach(id => { svg.querySelector(`path[data-id="${id}"]`)?.remove(); });
+        edges = edges.filter(e => !toRemoveIds.has(e.id));
+    }
+    // Forzar no dirigida en las aristas restantes
+    edges.forEach(e => { e.directed = false; e.bidirectional = false; });
 }
