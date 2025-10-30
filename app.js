@@ -2178,17 +2178,31 @@ function esquinaNoreste(ofertaOriginal, demandaOriginal) {
 
     let i = 0, j = 0;
 
+    const EPS = 1e-9;
     while (i < m && j < n) {
         const cantidad = Math.min(oferta[i], demanda[j]);
         asignacion[i][j] = cantidad;
         oferta[i] -= cantidad;
         demanda[j] -= cantidad;
 
-        if (oferta[i] === 0 && i < m - 1) {
-            i++;
-        } else if (demanda[j] === 0 && j < n - 1) {
-            j++;
+        const ofertaCero = Math.abs(oferta[i]) < EPS;
+        const demandaCero = Math.abs(demanda[j]) < EPS;
+
+        // Si ambos quedan a cero, avanzar ambos índices (si es posible)
+        if (ofertaCero && demandaCero) {
+            // Si ambos se vuelven 0, avanzamos ambos si no estamos en el último elemento
+            if (i < m - 1) i++;
+            if (j < n - 1) j++;
+            // Si ninguno puede avanzar (ambos en última posición), terminamos
+            if ((i >= m || j >= n) || (i === m - 1 && j === n - 1)) break;
+        } else if (ofertaCero) {
+            if (i < m - 1) i++;
+            else break;
+        } else if (demandaCero) {
+            if (j < n - 1) j++;
+            else break;
         } else {
+            // Ninguno llegó a 0; no hay más asignaciones posibles en esta configuración
             break;
         }
     }
