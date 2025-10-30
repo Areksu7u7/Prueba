@@ -27,6 +27,9 @@
             <button id="randomBtn">🎲 Generar</button>
             <button id="customBtn">📝 Personalizar</button>
             <button id="clearBtn">🗑️ Limpiar</button>
+            <!-- NUEVOS BOTONES DE EXPORTAR/IMPORTAR -->
+            <button id="exportBtn">💾 Exportar</button>
+            <button id="importBtn">📂 Importar</button>
         </div>
         
         <div class="sort-controls">
@@ -69,6 +72,8 @@
                     <li><strong>🎲 Generar:</strong> Crea un nuevo conjunto de valores aleatorios sin repetir.</li>
                     <li><strong>📝 Personalizar:</strong> Ingresa tu propia lista de números separados por comas.</li>
                     <li><strong>🗑️ Limpiar:</strong> Elimina todas las burbujas.</li>
+                    <li><strong>💾 Exportar:</strong> Guarda los valores actuales en un archivo JSON.</li>
+                    <li><strong>📂 Importar:</strong> Carga valores desde un archivo JSON guardado previamente.</li>
                     <li><strong>Orden:</strong> Selecciona entre orden ascendente (⬆️) o descendente (⬇️).</li>
                 </ul>
             </div>
@@ -130,6 +135,7 @@
                     <li>Los algoritmos O(n log n) como <strong>Merge Sort</strong> son mucho más rápidos con grandes cantidades.</li>
                     <li>Si hay muchas burbujas, usa el <strong>scroll</strong> para verlas todas.</li>
                     <li>El rango máximo debe ser al menos igual a la cantidad de burbujas para evitar repeticiones.</li>
+                    <li>Usa <strong>Exportar</strong> para guardar configuraciones interesantes y <strong>Importar</strong> para recuperarlas.</li>
                 </ul>
             </div>
         </div>
@@ -146,6 +152,23 @@
                 <div style="margin-top: 15px; display: flex; gap: 10px;">
                     <button id="confirmCustom" style="background: #4CAF50;">✅ Aceptar</button>
                     <button id="cancelCustom" style="background: #f44336;">❌ Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para nombre del archivo al exportar -->
+    <div id="exportModal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <span class="close" id="closeExport">&times;</span>
+            <h2>💾 Exportar Valores</h2>
+            <div class="help-section">
+                <p>Ingresa un nombre para el archivo (sin extensión):</p>
+                <input type="text" id="exportFileName" placeholder="mis_valores_ordenamiento" style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid #00f7ff; background: #23234a; color: #fff; font-size: 16px; margin-bottom: 15px;">
+                <p style="font-size: 0.9rem; color: #aaa;">Se guardará como archivo JSON con información de los valores y configuración.</p>
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    <button id="confirmExport" style="background: #2196F3;">💾 Guardar</button>
+                    <button id="cancelExport" style="background: #f44336;">❌ Cancelar</button>
                 </div>
             </div>
         </div>
