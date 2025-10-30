@@ -7,43 +7,46 @@
     <link rel="stylesheet" href="sort.css">
 </head>
 <body>
-    <h1>Visualizador de Algoritmos de Ordenamiento</h1>
+    <h1>Algoritmos de Ordenamiento</h1>
+
+    <!-- Mensajes de estado -->
+    <div id="statusMessage" class="status-message"></div>
 
     <div class="controls">
-        <!-- Botón para volver a Grafos (misma ventana) - heredará estilos de .controls button -->
-        <button id="backToGrafosBtn" title="Volver a Grafos" onclick="window.location.href='grafos johnson.html'">Volver a Grafos</button>
+        <!-- Botón para volver a Grafos -->
+        <button id="backToGrafosBtn" title="Volver a Grafos" onclick="window.location.href='grafos johnson.html'">🔙 Volver a Grafos</button>
         
         <!-- Menú desplegable para configuración de datos -->
         <div class="dropdown">
-            <button class="dropdown-btn">Configuración de Datos</button>
+            <button class="dropdown-btn">🎲 Configuración de Datos</button>
             <div class="dropdown-content">
                 <div class="range-controls">
-                    <label for="numValues">Cantidad de globos:</label>
+                    <label for="numValues">🎈 Cantidad de globos:</label>
                     <input type="number" id="numValues" min="0" max="1000" value="50">
                     
-                    <label for="minValue">Mínimo:</label>
+                    <label for="minValue">Valor máximo:</label>
                     <input type="number" id="minValue" min="0" max="1000" value="1">
                     
-                    <label for="maxValue">Máximo:</label>
+                    <label for="maxValue">Valor mínimo:</label>
                     <input type="number" id="maxValue" min="1" max="1000" value="100">
                     
-                    <button id="randomBtn">Generar Aleatorio</button>
-                    <button id="customBtn">Personalizar</button>
-                    <button id="clearBtn">Limpiar</button>
+                    <button id="randomBtn">🎲 Generar Aleatorio</button>
+                    <button id="customBtn">📝 Personalizar</button>
+                    <button id="clearBtn">🗑️ Limpiar</button>
                 </div>
             </div>
         </div>
         
         <!-- Menú desplegable para algoritmos -->
         <div class="dropdown">
-            <button class="dropdown-btn">Algoritmos de Ordenamiento</button>
+            <button class="dropdown-btn">⚡ Algoritmos de Ordenamiento</button>
             <div class="dropdown-content">
                 <div class="order-controls">
-                    <label>Orden:</label>
+                    <label>📊 Orden:</label>
                     <input type="radio" id="ascOrder" name="sortOrder" value="asc" checked>
-                    <label for="ascOrder" class="radio-label">Ascendente</label>
+                    <label for="ascOrder" class="radio-label">⬆️ Ascendente</label>
                     <input type="radio" id="descOrder" name="sortOrder" value="desc">
-                    <label for="descOrder" class="radio-label">Descendente</label>
+                    <label for="descOrder" class="radio-label">⬇️ Descendente</label>
                 </div>
                 
                 <button id="bubbleBtn">Bubble Sort</button>
@@ -56,15 +59,15 @@
         
         <!-- Menú desplegable para archivos -->
         <div class="dropdown">
-            <button class="dropdown-btn">Archivos</button>
+            <button class="dropdown-btn">💾 Archivos</button>
             <div class="dropdown-content">
-                <button id="exportBtn">Exportar</button>
-                <button id="importBtn">Importar</button>
+                <button id="exportBtn">💾 Exportar</button>
+                <button id="importBtn">📂 Importar</button>
             </div>
         </div>
         
         <!-- Botón de ayuda separado -->
-        <button id="helpBtn">Ayuda</button>
+        <button id="helpBtn">❓ Ayuda</button>
     </div>
 
     <div class="bubbles" id="bubbles"></div>
@@ -74,83 +77,83 @@
     <div id="helpModal" class="modal" aria-hidden="true">
         <div class="modal-content">
             <span class="close" role="button" aria-label="Cerrar">&times;</span>
-            <h2>Manual de Usuario - Visualizador de Ordenamiento</h2>
+            <h2>📚 Manual de Usuario - Visualizador de Ordenamiento</h2>
             
             <div class="help-section">
-                <h3>¿Qué hace esta aplicación?</h3>
+                <h3>🎯 ¿Qué hace esta aplicación?</h3>
                 <p>Este visualizador te permite ver cómo funcionan diferentes algoritmos de ordenamiento de manera visual. Cada burbuja representa un número, y su <strong>tamaño indica su valor</strong>: burbujas más grandes = números más grandes.</p>
             </div>
 
             <div class="help-section">
-                <h3>Controles Básicos</h3>
+                <h3>🎮 Controles Básicos</h3>
                 <ul>
-                    <li><strong>Configuración de Datos:</strong> Menú para configurar la cantidad y rango de valores, generar aleatorios, personalizar o limpiar.</li>
-                    <li><strong>Algoritmos de Ordenamiento:</strong> Menú para seleccionar el algoritmo y el orden (ascendente/descendente).</li>
-                    <li><strong>Archivos:</strong> Menú para exportar e importar configuraciones.</li>
-                    <li><strong>Cantidad de globos:</strong> Escribe un número entre 0 y 1000 (0 para vacío).</li>
-                    <li><strong>Rango de valores:</strong> Define el valor mínimo y máximo para los números aleatorios.</li>
-                    <li><strong>Generar Aleatorio:</strong> Crea un nuevo conjunto de valores aleatorios sin repetir.</li>
-                    <li><strong>Personalizar:</strong> Ingresa tu propia lista de números separados por comas.</li>
-                    <li><strong>Limpiar:</strong> Elimina todas las burbujas.</li>
-                    <li><strong>Exportar:</strong> Guarda los valores actuales en un archivo JSON.</li>
-                    <li><strong>Importar:</strong> Carga valores desde un archivo JSON guardado previamente.</li>
-                    <li><strong>Orden:</strong> Selecciona entre orden ascendente o descendente.</li>
+                    <li><strong>🎲 Configuración de Datos:</strong> Menú para configurar la cantidad y rango de valores, generar aleatorios, personalizar o limpiar.</li>
+                    <li><strong>⚡ Algoritmos de Ordenamiento:</strong> Menú para seleccionar el algoritmo y el orden (ascendente/descendente).</li>
+                    <li><strong>💾 Archivos:</strong> Menú para exportar e importar configuraciones.</li>
+                    <li><strong>🎈 Cantidad de globos:</strong> Escribe un número entre 0 y 1000 (0 para vacío).</li>
+                    <li><strong>📏 Valor mínimo y 📐 Valor máximo:</strong> Define el rango de valores para los números. <strong>Importante:</strong> El rango debe ser al menos igual a la cantidad de burbujas para evitar repeticiones.</li>
+                    <li><strong>🎲 Generar Aleatorio:</strong> Crea un nuevo conjunto de valores aleatorios sin repetir.</li>
+                    <li><strong>📝 Personalizar:</strong> Ingresa tu propia lista de números separados por comas.</li>
+                    <li><strong>🗑️ Limpiar:</strong> Elimina todas las burbujas.</li>
+                    <li><strong>💾 Exportar:</strong> Guarda los valores actuales en un archivo JSON.</li>
+                    <li><strong>📂 Importar:</strong> Carga valores desde un archivo JSON guardado previamente.</li>
+                    <li><strong>📊 Orden:</strong> Selecciona entre orden ascendente (⬆️) o descendente (⬇️).</li>
                 </ul>
             </div>
 
             <div class="help-section">
-                <h3>Colores de las Burbujas</h3>
+                <h3>🎨 Colores de las Burbujas</h3>
                 <ul>
-                    <li><span class="color-box" style="background: #00f7ff;">Azul:</span> Burbujas sin ordenar</li>
-                    <li><span class="color-box" style="background: #ffd700;">Amarillo/Naranja:</span> Burbuja activa (se está moviendo)</li>
-                    <li><span class="color-box" style="background: #ff4444;">Rojo:</span> Burbujas comparándose</li>
-                    <li><span class="color-box" style="background: #00ff88;">Verde:</span> Burbujas ya ordenadas</li>
+                    <li><span class="color-box" style="background: #00f7ff;">🔵 Azul:</span> Burbujas sin ordenar</li>
+                    <li><span class="color-box" style="background: #ffd700;">🟡 Amarillo/Naranja:</span> Burbuja activa (se está moviendo)</li>
+                    <li><span class="color-box" style="background: #ff4444;">🔴 Rojo:</span> Burbujas comparándose</li>
+                    <li><span class="color-box" style="background: #00ff88;">🟢 Verde:</span> Burbujas ya ordenadas</li>
                 </ul>
             </div>
 
             <div class="help-section">
-                <h3>Algoritmos de Ordenamiento</h3>
+                <h3>🧮 Algoritmos de Ordenamiento</h3>
                 
                 <div class="algo-card">
-                    <h4>Bubble Sort (Burbuja)</h4>
+                    <h4>🌀 Bubble Sort (Burbuja)</h4>
                     <p><strong>¿Cómo funciona?</strong> Compara parejas de burbujas vecinas y las intercambia si están en el orden incorrecto. Es como burbujas que suben a la superficie.</p>
-                    <p><strong>Velocidad:</strong> Lento (bueno para pocos datos)</p>
+                    <p><strong>Velocidad:</strong> ⭐⭐ Lento (bueno para pocos datos)</p>
                     <p><strong>Complejidad:</strong> O(n²)</p>
                 </div>
 
                 <div class="algo-card">
-                    <h4>Selection Sort (Selección)</h4>
+                    <h4>🎯 Selection Sort (Selección)</h4>
                     <p><strong>¿Cómo funciona?</strong> Busca el valor más pequeño y lo coloca al inicio, luego busca el siguiente más pequeño, y así sucesivamente.</p>
-                    <p><strong>Velocidad:</strong> Lento (sencillo pero ineficiente)</p>
+                    <p><strong>Velocidad:</strong> ⭐⭐ Lento (sencillo pero ineficiente)</p>
                     <p><strong>Complejidad:</strong> O(n²)</p>
                 </div>
 
                 <div class="algo-card">
-                    <h4>Insertion Sort (Inserción)</h4>
+                    <h4>📥 Insertion Sort (Inserción)</h4>
                     <p><strong>¿Cómo funciona?</strong> Toma cada burbuja y la inserta en su posición correcta, como ordenar cartas en tu mano.</p>
-                    <p><strong>Velocidad:</strong> Medio (rápido con datos casi ordenados)</p>
+                    <p><strong>Velocidad:</strong> ⭐⭐⭐ Medio (rápido con datos casi ordenados)</p>
                     <p><strong>Complejidad:</strong> O(n²)</p>
                 </div>
 
                 <div class="algo-card">
-                    <h4>Shell Sort</h4>
+                    <h4>🐚 Shell Sort</h4>
                     <p><strong>¿Cómo funciona?</strong> Una versión mejorada de Insertion Sort que compara elementos lejanos primero, reduciendo el desorden rápidamente.</p>
-                    <p><strong>Velocidad:</strong> Rápido (mejor que los anteriores)</p>
+                    <p><strong>Velocidad:</strong> ⭐⭐⭐⭐ Rápido (mejor que los anteriores)</p>
                     <p><strong>Complejidad:</strong> O(n log n)</p>
                 </div>
 
                 <div class="algo-card">
-                    <h4>Merge Sort (Mezcla)</h4>
+                    <h4>🔄 Merge Sort (Mezcla)</h4>
                     <p><strong>¿Cómo funciona?</strong> Divide las burbujas en grupos pequeños, los ordena y luego los combina. Es el más eficiente de todos.</p>
-                    <p><strong>Velocidad:</strong> Muy rápido (ideal para muchos datos)</p>
+                    <p><strong>Velocidad:</strong> ⭐⭐⭐⭐⭐ Muy rápido (ideal para muchos datos)</p>
                     <p><strong>Complejidad:</strong> O(n log n)</p>
                 </div>
             </div>
 
             <div class="help-section">
-                <h3>Funciones de Archivo</h3>
+                <h3>💾 Funciones de Archivo</h3>
                 <ul>
-                    <li><strong>Exportar:</strong> Permite guardar la configuración actual de valores en un archivo JSON que incluye:
+                    <li><strong>💾 Exportar:</strong> Permite guardar la configuración actual de valores en un archivo JSON que incluye:
                         <ul>
                             <li>Los valores actuales de las burbujas</li>
                             <li>La cantidad de elementos</li>
@@ -158,20 +161,32 @@
                             <li>Información de configuración</li>
                         </ul>
                     </li>
-                    <li><strong>Importar:</strong> Permite cargar un archivo JSON previamente guardado para restaurar una configuración específica.</li>
+                    <li><strong>📂 Importar:</strong> Permite cargar un archivo JSON previamente guardado para restaurar una configuración específica.</li>
                 </ul>
             </div>
 
             <div class="help-section">
-                <h3>Consejos</h3>
+                <h3>⚠️ Mensajes de Error y Validación</h3>
+                <ul>
+                    <li><strong>Rango insuficiente:</strong> Si el rango (máximo - mínimo + 1) es menor que la cantidad de burbujas, se mostrará un mensaje y se ajustará automáticamente.</li>
+                    <li><strong>Valores inválidos:</strong> Si ingresas valores no numéricos o fuera de rango, se mostrará un mensaje explicativo.</li>
+                    <li><strong>Archivos corruptos:</strong> Si intentas importar un archivo con formato incorrecto, se notificará el error.</li>
+                    <li><strong>Límites excedidos:</strong> Si superas los 1000 elementos, se ajustará automáticamente al máximo permitido.</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3>💡 Consejos y Mejores Prácticas</h3>
                 <ul>
                     <li>Empieza con <strong>20-30 burbujas</strong> para ver los algoritmos con claridad.</li>
                     <li>Usa <strong>100+ burbujas</strong> para notar la diferencia de velocidad entre algoritmos.</li>
                     <li>Los algoritmos O(n log n) como <strong>Merge Sort</strong> son mucho más rápidos con grandes cantidades.</li>
                     <li>Si hay muchas burbujas, usa el <strong>scroll</strong> para verlas todas.</li>
-                    <li>El rango máximo debe ser al menos igual a la cantidad de burbujas para evitar repeticiones.</li>
+                    <li><strong>Importante:</strong> El rango (máximo - mínimo + 1) debe ser al menos igual a la cantidad de burbujas para evitar repeticiones.</li>
                     <li>Usa <strong>Exportar</strong> para guardar configuraciones interesantes y <strong>Importar</strong> para recuperarlas.</li>
                     <li>Puedes personalizar completamente los valores usando la opción <strong>Personalizar</strong>.</li>
+                    <li>Para ver el funcionamiento detallado de cada algoritmo, usa pocos elementos (5-10) y observa cómo se mueven las burbujas.</li>
+                    <li>El sistema de mensajes te informará sobre cualquier problema o acción exitosa.</li>
                 </ul>
             </div>
         </div>
@@ -181,13 +196,13 @@
     <div id="customModal" class="modal" aria-hidden="true">
         <div class="modal-content">
             <span class="close" id="closeCustom">&times;</span>
-            <h2>Ingresar Números Personalizados</h2>
+            <h2>📝 Ingresar Números Personalizados</h2>
             <div class="help-section">
                 <p>Ingresa tus números separados por comas (ej: 5,2,8,1,9):</p>
                 <textarea id="customNumbers" rows="6" placeholder="Ejemplo: 5,2,8,1,9,3,7,4,6,10" style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid #4CAF50; font-size: 16px;"></textarea>
                 <div style="margin-top: 15px; display: flex; gap: 10px;">
-                    <button id="confirmCustom" style="background: #4CAF50;">Aceptar</button>
-                    <button id="cancelCustom" style="background: #f44336;">Cancelar</button>
+                    <button id="confirmCustom" style="background: #4CAF50;">✅ Aceptar</button>
+                    <button id="cancelCustom" style="background: #f44336;">❌ Cancelar</button>
                 </div>
             </div>
         </div>
@@ -197,14 +212,14 @@
     <div id="exportModal" class="modal" aria-hidden="true">
         <div class="modal-content">
             <span class="close" id="closeExport">&times;</span>
-            <h2>Exportar Valores</h2>
+            <h2>💾 Exportar Valores</h2>
             <div class="help-section">
                 <p>Ingresa un nombre para el archivo (sin extensión):</p>
                 <input type="text" id="exportFileName" placeholder="mis_valores_ordenamiento" style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid #00f7ff; background: #23234a; color: #fff; font-size: 16px; margin-bottom: 15px;">
                 <p style="font-size: 0.9rem; color: #aaa;">Se guardará como archivo JSON con información de los valores y configuración.</p>
                 <div style="margin-top: 15px; display: flex; gap: 10px;">
-                    <button id="confirmExport" style="background: #2196F3;">Guardar</button>
-                    <button id="cancelExport" style="background: #f44336;">Cancelar</button>
+                    <button id="confirmExport" style="background: #2196F3;">💾 Guardar</button>
+                    <button id="cancelExport" style="background: #f44336;">❌ Cancelar</button>
                 </div>
             </div>
         </div>

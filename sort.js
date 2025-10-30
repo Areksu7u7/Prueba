@@ -30,6 +30,7 @@ const cancelExport = document.getElementById('cancelExport');
 const confirmExport = document.getElementById('confirmExport');
 const exportFileName = document.getElementById('exportFileName');
 const importFile = document.createElement('input');
+const statusMessage = document.getElementById('statusMessage');
 
 let values = [];
 let sorting = false;
@@ -43,6 +44,17 @@ importFile.accept = '.json';
 importFile.id = 'importFile';
 importFile.style.display = 'none';
 document.body.appendChild(importFile);
+
+// Función para mostrar mensajes en pantalla
+function showMessage(message, type = 'info', duration = 4000) {
+    statusMessage.textContent = message;
+    statusMessage.className = `status-message ${type}`;
+    statusMessage.style.display = 'block';
+    
+    setTimeout(() => {
+        statusMessage.style.display = 'none';
+    }, duration);
+}
 
 // Obtener dirección de ordenamiento
 function getSortOrder() {
@@ -63,6 +75,7 @@ function clearAll() {
     values = [];
     operationsCount = 0;
     render();
+    showMessage('🗑️ Todos los valores han sido eliminados', 'info', 3000);
     algoName.textContent = 'Lista vacía - Agrega valores para ordenar';
 }
 
@@ -74,10 +87,12 @@ function randomValues(n, min = 0, max = 100) {
     }
     
     // Verificar que el rango sea válido
-    if (max - min + 1 < n) {
-        alert(`Error: El rango (${min}-${max}) debe ser al menos igual a la cantidad de burbujas (${n}).\nMáximo debe ser al menos ${min + n - 1}`);
-        maxInput.value = min + n - 1;
-        max = min + n - 1;
+    const range = max - min + 1;
+    if (range < n) {
+        const newMax = min + n - 1;
+        showMessage(`⚠️ Rango insuficiente! Se ajustó máximo a ${newMax} para generar ${n} valores únicos`, 'warning', 5000);
+        maxInput.value = newMax;
+        max = newMax;
     }
     
     const allNumbers = Array.from({ length: max - min + 1 }, (_, i) => i + min);
@@ -91,6 +106,7 @@ function randomValues(n, min = 0, max = 100) {
     values = allNumbers.slice(0, n);
     operationsCount = 0;
     render();
+    showMessage(`🎲 Generados ${n} valores únicos en rango ${min}-${max}`, 'success', 3000);
     algoName.textContent = '';
 }
 
@@ -104,7 +120,7 @@ function setCustomValues() {
 function processCustomNumbers() {
     const input = customNumbers.value.trim();
     if (!input) {
-        alert('Por favor ingresa algunos números');
+        showMessage('❌ Por favor ingresa algunos números', 'error', 3000);
         return;
     }
     
@@ -128,21 +144,27 @@ function processCustomNumbers() {
         }
         
         if (numberArray.length > 1000) {
-            alert('Máximo 1000 números permitidos');
+            showMessage('❌ Máximo 1000 números permitidos', 'error', 4000);
             return;
         }
         
         // Actualizar la interfaz
         values = numberArray;
         numInput.value = values.length;
+        const minVal = Math.min(...values);
+        const maxVal = Math.max(...values);
+        minInput.value = minVal;
+        maxInput.value = maxVal;
         operationsCount = 0;
+        
         render();
+        showMessage(`✅ ${values.length} números personalizados cargados (rango: ${minVal}-${maxVal})`, 'success', 4000);
         algoName.textContent = '';
         customModal.style.display = 'none';
         customNumbers.value = '';
         
     } catch (error) {
-        alert(`Error: ${error.message}`);
+        showMessage(`❌ Error: ${error.message}`, 'error', 5000);
     }
 }
 
@@ -190,7 +212,7 @@ function render() {
     if (n === 0) {
         const emptyMessage = document.createElement('div');
         emptyMessage.className = 'empty-message';
-        emptyMessage.textContent = 'No hay burbujas para mostrar. Usa "Generar" o "Personalizar" para agregar valores.';
+        emptyMessage.textContent = '🎈 No hay burbujas para mostrar. Usa "Generar" o "Personalizar" para agregar valores.';
         bubblesDiv.appendChild(emptyMessage);
         return;
     }
@@ -252,7 +274,7 @@ function updateBubbles(active = [], sorted = [], comparing = []) {
 
 // Deshabilitar botones
 function disableButtons(disabled) {
-    const buttons = [bubbleBtn, insertionBtn, shellBtn, mergeBtn, selectionBtn, randomBtn, customBtn, clearBtn];
+    const buttons = [bubbleBtn, insertionBtn, shellBtn, mergeBtn, selectionBtn, randomBtn, customBtn, clearBtn, exportBtn, importBtn];
     buttons.forEach(btn => (btn.disabled = disabled));
     numInput.disabled = disabled;
     minInput.disabled = disabled;
@@ -301,7 +323,7 @@ function calculateBigO(algoName, n) {
 // Mostrar información del algoritmo con Big O calculado
 function updateAlgoInfo(name, n) {
     if (n === 0) {
-        algoName.textContent = 'No hay valores para ordenar';
+        algoName.textContent = '❌ No hay valores para ordenar';
         return;
     }
     
@@ -332,6 +354,7 @@ async function bubbleSort() {
     const n = values.length;
     if (n === 0) {
         updateAlgoInfo('Bubble Sort', n);
+        showMessage('❌ No hay valores para ordenar', 'error', 3000);
         return;
     }
     
@@ -341,6 +364,7 @@ async function bubbleSort() {
     
     disableButtons(true);
     sorting = true;
+    showMessage(`🌀 Iniciando Bubble Sort (${order === 'asc' ? 'ascendente' : 'descendente'})...`, 'info');
 
     try {
         let swapped;
@@ -366,6 +390,7 @@ async function bubbleSort() {
         }
         updateBubbles([], Array.from({ length: n }, (_, i) => i));
         updateAlgoInfo('Bubble Sort', n);
+        showMessage(`✅ Bubble Sort completado! ${operationsCount.toLocaleString()} operaciones realizadas`, 'success', 4000);
     } finally {
         sorting = false;
         disableButtons(false);
@@ -376,6 +401,7 @@ async function insertionSort() {
     const n = values.length;
     if (n === 0) {
         updateAlgoInfo('Insertion Sort', n);
+        showMessage('❌ No hay valores para ordenar', 'error', 3000);
         return;
     }
     
@@ -385,6 +411,7 @@ async function insertionSort() {
     
     disableButtons(true);
     sorting = true;
+    showMessage(`📥 Iniciando Insertion Sort (${order === 'asc' ? 'ascendente' : 'descendente'})...`, 'info');
 
     try {
         for (let i = 1; i < n; i++) {
@@ -410,6 +437,7 @@ async function insertionSort() {
         }
         updateBubbles([], values.map((_, i) => i));
         updateAlgoInfo('Insertion Sort', n);
+        showMessage(`✅ Insertion Sort completado! ${operationsCount.toLocaleString()} operaciones realizadas`, 'success', 4000);
     } finally {
         sorting = false;
         disableButtons(false);
@@ -420,6 +448,7 @@ async function shellSort() {
     const n = values.length;
     if (n === 0) {
         updateAlgoInfo('Shell Sort', n);
+        showMessage('❌ No hay valores para ordenar', 'error', 3000);
         return;
     }
     
@@ -429,6 +458,7 @@ async function shellSort() {
     
     disableButtons(true);
     sorting = true;
+    showMessage(`🐚 Iniciando Shell Sort (${order === 'asc' ? 'ascendente' : 'descendente'})...`, 'info');
 
     try {
         let gaps = [701, 301, 132, 57, 23, 10, 4, 1].filter(gap => gap < n);
@@ -461,6 +491,7 @@ async function shellSort() {
         }
         updateBubbles([], values.map((_, i) => i));
         updateAlgoInfo('Shell Sort', n);
+        showMessage(`✅ Shell Sort completado! ${operationsCount.toLocaleString()} operaciones realizadas`, 'success', 4000);
     } finally {
         sorting = false;
         disableButtons(false);
@@ -471,6 +502,7 @@ async function mergeSortMain() {
     const n = values.length;
     if (n === 0) {
         updateAlgoInfo('Merge Sort', n);
+        showMessage('❌ No hay valores para ordenar', 'error', 3000);
         return;
     }
     
@@ -480,12 +512,14 @@ async function mergeSortMain() {
     
     disableButtons(true);
     sorting = true;
+    showMessage(`🔄 Iniciando Merge Sort (${order === 'asc' ? 'ascendente' : 'descendente'})...`, 'info');
 
     try {
         await mergeSort(0, n - 1, order);
         if (sorting) {
             updateBubbles([], values.map((_, i) => i));
             updateAlgoInfo('Merge Sort', n);
+            showMessage(`✅ Merge Sort completado! ${operationsCount.toLocaleString()} operaciones realizadas`, 'success', 4000);
         }
     } finally {
         sorting = false;
@@ -555,6 +589,7 @@ async function selectionSort() {
     const n = values.length;
     if (n === 0) {
         updateAlgoInfo('Selection Sort', n);
+        showMessage('❌ No hay valores para ordenar', 'error', 3000);
         return;
     }
     
@@ -564,6 +599,7 @@ async function selectionSort() {
     
     disableButtons(true);
     sorting = true;
+    showMessage(`🎯 Iniciando Selection Sort (${order === 'asc' ? 'ascendente' : 'descendente'})...`, 'info');
 
     try {
         for (let i = 0; i < n - 1; i++) {
@@ -591,6 +627,7 @@ async function selectionSort() {
         }
         updateBubbles([], values.map((_, i) => i));
         updateAlgoInfo('Selection Sort', n);
+        showMessage(`✅ Selection Sort completado! ${operationsCount.toLocaleString()} operaciones realizadas`, 'success', 4000);
     } finally {
         sorting = false;
         disableButtons(false);
@@ -600,7 +637,7 @@ async function selectionSort() {
 // Función para exportar datos
 function exportData() {
     if (values.length === 0) {
-        alert('No hay valores para exportar');
+        showMessage('❌ No hay valores para exportar', 'error', 3000);
         return;
     }
     
@@ -627,7 +664,7 @@ function saveFile(filename, data) {
 function processExport() {
     const filename = exportFileName.value.trim();
     if (!filename) {
-        alert('Por favor ingresa un nombre para el archivo');
+        showMessage('❌ Por favor ingresa un nombre para el archivo', 'error', 3000);
         return;
     }
     
@@ -652,7 +689,8 @@ function processExport() {
     exportModal.style.display = 'none';
     
     // Mostrar confirmación
-    algoName.textContent = `Datos exportados como: ${filenameWithExt}`;
+    showMessage(`💾 Datos exportados exitosamente como: ${filenameWithExt}`, 'success', 5000);
+    
     setTimeout(() => {
         if (values.length > 0) {
             updateAlgoInfo('Listo para ordenar', values.length);
@@ -665,7 +703,7 @@ function processExport() {
 // Función para importar datos
 function importData() {
     if (sorting) {
-        alert('Espera a que termine el ordenamiento actual');
+        showMessage('⏳ Espera a que termine el ordenamiento actual', 'warning', 3000);
         return;
     }
     
@@ -691,12 +729,12 @@ importFile.addEventListener('change', function(event) {
             
             // Validar los valores
             if (importedValues.length > 1000) {
-                alert('El archivo contiene más de 1000 elementos (máximo permitido)');
+                showMessage('❌ El archivo contiene más de 1000 elementos (máximo permitido)', 'error', 4000);
                 return;
             }
             
             if (!importedValues.every(val => Number.isInteger(val))) {
-                alert('El archivo contiene valores no numéricos');
+                showMessage('❌ El archivo contiene valores no numéricos', 'error', 4000);
                 return;
             }
             
@@ -708,7 +746,7 @@ importFile.addEventListener('change', function(event) {
             operationsCount = 0;
             
             render();
-            algoName.textContent = `Datos importados: ${values.length} elementos`;
+            showMessage(`📂 Datos importados exitosamente: ${values.length} elementos cargados`, 'success', 4000);
             
             // Limpiar el input file
             importFile.value = '';
@@ -720,13 +758,13 @@ importFile.addEventListener('change', function(event) {
             }, 3000);
             
         } catch (error) {
-            alert(`Error al importar el archivo: ${error.message}`);
+            showMessage(`❌ Error al importar el archivo: ${error.message}`, 'error', 5000);
             importFile.value = '';
         }
     };
     
     reader.onerror = function() {
-        alert('Error al leer el archivo');
+        showMessage('❌ Error al leer el archivo', 'error', 4000);
         importFile.value = '';
     };
     
@@ -737,7 +775,10 @@ importFile.addEventListener('change', function(event) {
 numInput.addEventListener('change', () => {
     let n = parseInt(numInput.value);
     if (isNaN(n) || n < 0) n = 0;
-    if (n > 1000) n = 1000;
+    if (n > 1000) {
+        n = 1000;
+        showMessage('⚠️ Máximo 1000 elementos permitidos. Se ajustó automáticamente.', 'warning', 4000);
+    }
     numInput.value = n;
     
     if (n === 0) {
@@ -748,8 +789,11 @@ numInput.addEventListener('change', () => {
     // Ajustar máximo automáticamente si es necesario
     const min = parseInt(minInput.value);
     const max = parseInt(maxInput.value);
-    if (max - min + 1 < n) {
-        maxInput.value = min + n - 1;
+    const range = max - min + 1;
+    if (range < n) {
+        const newMax = min + n - 1;
+        showMessage(`⚠️ Rango insuficiente! Se ajustó máximo a ${newMax} para generar ${n} valores únicos`, 'warning', 5000);
+        maxInput.value = newMax;
     }
     
     if (!sorting) randomValues(n, min, max);
@@ -765,11 +809,16 @@ minInput.addEventListener('change', () => {
     const max = parseInt(maxInput.value);
     
     if (max <= min) {
-        maxInput.value = min + 1;
+        const newMax = min + 1;
+        showMessage(`⚠️ El valor máximo debe ser mayor al mínimo. Se ajustó a ${newMax}`, 'warning', 4000);
+        maxInput.value = newMax;
     }
     
-    if (n > 0 && max - min + 1 < n) {
-        maxInput.value = min + n - 1;
+    const range = max - min + 1;
+    if (n > 0 && range < n) {
+        const newMax = min + n - 1;
+        showMessage(`⚠️ Rango insuficiente! Se ajustó máximo a ${newMax} para generar ${n} valores únicos`, 'warning', 5000);
+        maxInput.value = newMax;
     }
     
     if (!sorting && n > 0) randomValues(n, min, max);
@@ -785,13 +834,22 @@ maxInput.addEventListener('change', () => {
     const min = parseInt(minInput.value);
     
     if (max <= min) {
-        minInput.value = max - 1;
-        if (minInput.value < 0) minInput.value = 0;
+        const newMin = max - 1;
+        if (newMin < 0) {
+            showMessage('❌ El valor máximo debe ser al menos 1 mayor que el mínimo', 'error', 4000);
+            minInput.value = 0;
+            maxInput.value = 1;
+        } else {
+            showMessage(`⚠️ El valor máximo debe ser mayor al mínimo. Se ajustó mínimo a ${newMin}`, 'warning', 4000);
+            minInput.value = newMin;
+        }
     }
     
-    if (n > 0 && max - min + 1 < n) {
-        alert(`El rango debe ser al menos igual a la cantidad de burbujas (${n}). Máximo ajustado a ${min + n - 1}`);
-        maxInput.value = min + n - 1;
+    const range = max - min + 1;
+    if (n > 0 && range < n) {
+        const newMax = min + n - 1;
+        showMessage(`⚠️ Rango insuficiente! Se ajustó máximo a ${newMax} para generar ${n} valores únicos`, 'warning', 5000);
+        maxInput.value = newMax;
     }
     
     if (!sorting && n > 0) randomValues(n, min, max);
