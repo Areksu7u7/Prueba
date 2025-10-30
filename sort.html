@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="sort.css">
 </head>
 <body>
-    <h1>Algoritmos de Ordenamiento</h1>
+    <h1>🎯 Visualizador de Algoritmos de Ordenamiento</h1>
 
     <!-- Mensajes de estado -->
     <div id="statusMessage" class="status-message"></div>
@@ -21,13 +21,13 @@
             <button class="dropdown-btn">🎲 Configuración de Datos</button>
             <div class="dropdown-content">
                 <div class="range-controls">
-                    <label for="numValues">🎈 Cantidad de globos:</label>
+                    <label for="numValues">Número de bolas:</label>
                     <input type="number" id="numValues" min="0" max="1000" value="50">
                     
-                    <label for="minValue">Valor máximo:</label>
+                    <label for="minValue">Rango mínimo:</label>
                     <input type="number" id="minValue" min="0" max="1000" value="1">
                     
-                    <label for="maxValue">Valor mínimo:</label>
+                    <label for="maxValue">Rango máximo:</label>
                     <input type="number" id="maxValue" min="1" max="1000" value="100">
                     
                     <button id="randomBtn">🎲 Generar Aleatorio</button>
@@ -90,9 +90,9 @@
                     <li><strong>🎲 Configuración de Datos:</strong> Menú para configurar la cantidad y rango de valores, generar aleatorios, personalizar o limpiar.</li>
                     <li><strong>⚡ Algoritmos de Ordenamiento:</strong> Menú para seleccionar el algoritmo y el orden (ascendente/descendente).</li>
                     <li><strong>💾 Archivos:</strong> Menú para exportar e importar configuraciones.</li>
-                    <li><strong>🎈 Cantidad de globos:</strong> Escribe un número entre 0 y 1000 (0 para vacío).</li>
-                    <li><strong>📏 Valor mínimo y 📐 Valor máximo:</strong> Define el rango de valores para los números. <strong>Importante:</strong> El rango debe ser al menos igual a la cantidad de burbujas para evitar repeticiones.</li>
-                    <li><strong>🎲 Generar Aleatorio:</strong> Crea un nuevo conjunto de valores aleatorios sin repetir.</li>
+                    <li><strong>🎈 Número de bolas:</strong> Define cuántas burbujas quieres generar (0-1000).</li>
+                    <li><strong>📏 Rango mínimo y 📐 Rango máximo:</strong> Define el rango de valores numéricos para las burbujas. <strong>Importante:</strong> El rango (máximo - mínimo + 1) debe ser al menos igual al número de bolas para generar valores únicos.</li>
+                    <li><strong>🎲 Generar Aleatorio:</strong> Crea un nuevo conjunto de valores aleatorios sin repetir dentro del rango especificado.</li>
                     <li><strong>📝 Personalizar:</strong> Ingresa tu propia lista de números separados por comas.</li>
                     <li><strong>🗑️ Limpiar:</strong> Elimina todas las burbujas.</li>
                     <li><strong>💾 Exportar:</strong> Guarda los valores actuales en un archivo JSON.</li>
@@ -151,6 +151,17 @@
             </div>
 
             <div class="help-section">
+                <h3>💡 Ejemplos de Configuración</h3>
+                <ul>
+                    <li><strong>20 bolas, rango 1-100:</strong> Genera 20 números únicos entre 1 y 100</li>
+                    <li><strong>50 bolas, rango 50-150:</strong> Genera 50 números únicos entre 50 y 150</li>
+                    <li><strong>100 bolas, rango 1-1000:</strong> Genera 100 números únicos entre 1 y 1000</li>
+                    <li><strong>10 bolas, rango 5-15:</strong> Genera 10 números únicos entre 5 y 15</li>
+                </ul>
+                <p><strong>Nota:</strong> Si el rango es menor que el número de bolas, se ajustará automáticamente.</p>
+            </div>
+
+            <div class="help-section">
                 <h3>💾 Funciones de Archivo</h3>
                 <ul>
                     <li><strong>💾 Exportar:</strong> Permite guardar la configuración actual de valores en un archivo JSON que incluye:
@@ -168,7 +179,7 @@
             <div class="help-section">
                 <h3>⚠️ Mensajes de Error y Validación</h3>
                 <ul>
-                    <li><strong>Rango insuficiente:</strong> Si el rango (máximo - mínimo + 1) es menor que la cantidad de burbujas, se mostrará un mensaje y se ajustará automáticamente.</li>
+                    <li><strong>Rango insuficiente:</strong> Si el rango (máximo - mínimo + 1) es menor que el número de bolas, se mostrará un mensaje y se ajustará automáticamente.</li>
                     <li><strong>Valores inválidos:</strong> Si ingresas valores no numéricos o fuera de rango, se mostrará un mensaje explicativo.</li>
                     <li><strong>Archivos corruptos:</strong> Si intentas importar un archivo con formato incorrecto, se notificará el error.</li>
                     <li><strong>Límites excedidos:</strong> Si superas los 1000 elementos, se ajustará automáticamente al máximo permitido.</li>
@@ -182,7 +193,7 @@
                     <li>Usa <strong>100+ burbujas</strong> para notar la diferencia de velocidad entre algoritmos.</li>
                     <li>Los algoritmos O(n log n) como <strong>Merge Sort</strong> son mucho más rápidos con grandes cantidades.</li>
                     <li>Si hay muchas burbujas, usa el <strong>scroll</strong> para verlas todas.</li>
-                    <li><strong>Importante:</strong> El rango (máximo - mínimo + 1) debe ser al menos igual a la cantidad de burbujas para evitar repeticiones.</li>
+                    <li><strong>Importante:</strong> El rango (máximo - mínimo + 1) debe ser al menos igual al número de bolas para generar valores únicos.</li>
                     <li>Usa <strong>Exportar</strong> para guardar configuraciones interesantes y <strong>Importar</strong> para recuperarlas.</li>
                     <li>Puedes personalizar completamente los valores usando la opción <strong>Personalizar</strong>.</li>
                     <li>Para ver el funcionamiento detallado de cada algoritmo, usa pocos elementos (5-10) y observa cómo se mueven las burbujas.</li>

@@ -79,7 +79,7 @@ function clearAll() {
     algoName.textContent = 'Lista vacía - Agrega valores para ordenar';
 }
 
-// Generar valores únicos aleatorios con rango personalizado
+// Generar valores únicos aleatorios dentro del rango especificado
 function randomValues(n, min = 0, max = 100) {
     if (n === 0) {
         clearAll();
@@ -95,18 +95,20 @@ function randomValues(n, min = 0, max = 100) {
         max = newMax;
     }
     
-    const allNumbers = Array.from({ length: max - min + 1 }, (_, i) => i + min);
+    // Crear un array con todos los números posibles en el rango
+    const allPossibleNumbers = Array.from({ length: max - min + 1 }, (_, i) => i + min);
     
     // Mezclar usando Fisher-Yates
-    for (let i = allNumbers.length - 1; i > 0; i--) {
+    for (let i = allPossibleNumbers.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [allNumbers[i], allNumbers[j]] = [allNumbers[j], allNumbers[i]];
+        [allPossibleNumbers[i], allPossibleNumbers[j]] = [allPossibleNumbers[j], allPossibleNumbers[i]];
     }
     
-    values = allNumbers.slice(0, n);
+    // Tomar los primeros n números únicos
+    values = allPossibleNumbers.slice(0, n);
     operationsCount = 0;
     render();
-    showMessage(`🎲 Generados ${n} valores únicos en rango ${min}-${max}`, 'success', 3000);
+    showMessage(`🎲 Generadas ${n} bolas con valores únicos en el rango ${min}-${max}`, 'success', 3000);
     algoName.textContent = '';
 }
 
@@ -349,7 +351,7 @@ function getBigONotation(algoName) {
     }
 }
 
-// ALGORITMOS OPTIMIZADOS
+// ALGORITMOS OPTIMIZADOS (sin cambios en la lógica de ordenamiento)
 async function bubbleSort() {
     const n = values.length;
     if (n === 0) {
@@ -777,7 +779,7 @@ numInput.addEventListener('change', () => {
     if (isNaN(n) || n < 0) n = 0;
     if (n > 1000) {
         n = 1000;
-        showMessage('⚠️ Máximo 1000 elementos permitidos. Se ajustó automáticamente.', 'warning', 4000);
+        showMessage('⚠️ Máximo 1000 bolas permitidas. Se ajustó automáticamente.', 'warning', 4000);
     }
     numInput.value = n;
     
@@ -786,7 +788,7 @@ numInput.addEventListener('change', () => {
         return;
     }
     
-    // Ajustar máximo automáticamente si es necesario
+    // Ajustar rango automáticamente si es necesario
     const min = parseInt(minInput.value);
     const max = parseInt(maxInput.value);
     const range = max - min + 1;
@@ -810,7 +812,7 @@ minInput.addEventListener('change', () => {
     
     if (max <= min) {
         const newMax = min + 1;
-        showMessage(`⚠️ El valor máximo debe ser mayor al mínimo. Se ajustó a ${newMax}`, 'warning', 4000);
+        showMessage(`⚠️ El rango máximo debe ser mayor al mínimo. Se ajustó a ${newMax}`, 'warning', 4000);
         maxInput.value = newMax;
     }
     
@@ -836,11 +838,11 @@ maxInput.addEventListener('change', () => {
     if (max <= min) {
         const newMin = max - 1;
         if (newMin < 0) {
-            showMessage('❌ El valor máximo debe ser al menos 1 mayor que el mínimo', 'error', 4000);
+            showMessage('❌ El rango máximo debe ser al menos 1 mayor que el mínimo', 'error', 4000);
             minInput.value = 0;
             maxInput.value = 1;
         } else {
-            showMessage(`⚠️ El valor máximo debe ser mayor al mínimo. Se ajustó mínimo a ${newMin}`, 'warning', 4000);
+            showMessage(`⚠️ El rango máximo debe ser mayor al mínimo. Se ajustó mínimo a ${newMin}`, 'warning', 4000);
             minInput.value = newMin;
         }
     }
