@@ -36,11 +36,14 @@ let sorting = false;
 let animationSpeed = 50;
 let bubbles = [];
 let operationsCount = 0;
+
+// Configurar input file para importar
 importFile.type = 'file';
 importFile.accept = '.json';
 importFile.id = 'importFile';
 importFile.style.display = 'none';
-document.body.appendChild(importFile);  
+document.body.appendChild(importFile);
+
 // Obtener dirección de ordenamiento
 function getSortOrder() {
     return descOrder.checked ? 'desc' : 'asc';
@@ -187,7 +190,7 @@ function render() {
     if (n === 0) {
         const emptyMessage = document.createElement('div');
         emptyMessage.className = 'empty-message';
-        emptyMessage.textContent = '🎈 No hay burbujas para mostrar. Usa "Generar" o "Personalizar" para agregar valores.';
+        emptyMessage.textContent = 'No hay burbujas para mostrar. Usa "Generar" o "Personalizar" para agregar valores.';
         bubblesDiv.appendChild(emptyMessage);
         return;
     }
@@ -298,7 +301,7 @@ function calculateBigO(algoName, n) {
 // Mostrar información del algoritmo con Big O calculado
 function updateAlgoInfo(name, n) {
     if (n === 0) {
-        algoName.textContent = '❌ No hay valores para ordenar';
+        algoName.textContent = 'No hay valores para ordenar';
         return;
     }
     
@@ -594,6 +597,142 @@ async function selectionSort() {
     }
 }
 
+// Función para exportar datos
+function exportData() {
+    if (values.length === 0) {
+        alert('No hay valores para exportar');
+        return;
+    }
+    
+    exportModal.style.display = 'block';
+    exportFileName.value = `ordenamiento_${new Date().toISOString().slice(0, 10)}_${values.length}_elementos`;
+    exportFileName.focus();
+    exportFileName.select();
+}
+
+// Función para guardar el archivo
+function saveFile(filename, data) {
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// Función para procesar la exportación
+function processExport() {
+    const filename = exportFileName.value.trim();
+    if (!filename) {
+        alert('Por favor ingresa un nombre para el archivo');
+        return;
+    }
+    
+    const exportData = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        data: {
+            values: values,
+            count: values.length,
+            minValue: Math.min(...values),
+            maxValue: Math.max(...values),
+            configuration: {
+                algorithm: algoName.textContent || 'No aplicable',
+                order: getSortOrder(),
+                elements: values.length
+            }
+        }
+    };
+    
+    const filenameWithExt = `${filename}.json`;
+    saveFile(filenameWithExt, JSON.stringify(exportData, null, 2));
+    exportModal.style.display = 'none';
+    
+    // Mostrar confirmación
+    algoName.textContent = `Datos exportados como: ${filenameWithExt}`;
+    setTimeout(() => {
+        if (values.length > 0) {
+            updateAlgoInfo('Listo para ordenar', values.length);
+        } else {
+            algoName.textContent = 'Lista vacía - Agrega valores para ordenar';
+        }
+    }, 3000);
+}
+
+// Función para importar datos
+function importData() {
+    if (sorting) {
+        alert('Espera a que termine el ordenamiento actual');
+        return;
+    }
+    
+    importFile.click();
+}
+
+// Procesar archivo importado
+importFile.addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            
+            // Validar estructura del archivo
+            if (!importedData.data || !Array.isArray(importedData.data.values)) {
+                throw new Error('Formato de archivo inválido');
+            }
+            
+            const importedValues = importedData.data.values;
+            
+            // Validar los valores
+            if (importedValues.length > 1000) {
+                alert('El archivo contiene más de 1000 elementos (máximo permitido)');
+                return;
+            }
+            
+            if (!importedValues.every(val => Number.isInteger(val))) {
+                alert('El archivo contiene valores no numéricos');
+                return;
+            }
+            
+            // Aplicar los valores importados
+            values = importedValues;
+            numInput.value = values.length;
+            minInput.value = Math.min(...values);
+            maxInput.value = Math.max(...values);
+            operationsCount = 0;
+            
+            render();
+            algoName.textContent = `Datos importados: ${values.length} elementos`;
+            
+            // Limpiar el input file
+            importFile.value = '';
+            
+            setTimeout(() => {
+                if (values.length > 0) {
+                    updateAlgoInfo('Listo para ordenar', values.length);
+                }
+            }, 3000);
+            
+        } catch (error) {
+            alert(`Error al importar el archivo: ${error.message}`);
+            importFile.value = '';
+        }
+    };
+    
+    reader.onerror = function() {
+        alert('Error al leer el archivo');
+        importFile.value = '';
+    };
+    
+    reader.readAsText(file);
+});
+
 // EVENTOS
 numInput.addEventListener('change', () => {
     let n = parseInt(numInput.value);
@@ -687,6 +826,8 @@ insertionBtn.onclick = () => !sorting && insertionSort();
 shellBtn.onclick = () => !sorting && shellSort();
 mergeBtn.onclick = () => !sorting && mergeSortMain();
 selectionBtn.onclick = () => !sorting && selectionSort();
+exportBtn.onclick = () => !sorting && exportData();
+importBtn.onclick = () => !sorting && importData();
 
 // Modales
 helpBtn.onclick = () => {
@@ -717,171 +858,6 @@ customNumbers.addEventListener('keypress', (e) => {
     }
 });
 
-window.onclick = (event) => {
-    if (event.target === helpModal) {
-        helpModal.style.display = 'none';
-    }
-    if (event.target === customModal) {
-        customModal.style.display = 'none';
-        customNumbers.value = '';
-    }
-};
-
-window.addEventListener('resize', () => {
-    if (!sorting) render();
-});
-
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        const n = parseInt(numInput.value);
-        if (n > 0) {
-            randomValues(n, parseInt(minInput.value), parseInt(maxInput.value));
-        } else {
-            clearAll();
-        }
-    }, 100);
-});
-// Función para exportar datos
-function exportData() {
-    if (values.length === 0) {
-        alert('❌ No hay valores para exportar');
-        return;
-    }
-    
-    exportModal.style.display = 'block';
-    exportFileName.value = `ordenamiento_${new Date().toISOString().slice(0, 10)}_${values.length}_elementos`;
-    exportFileName.focus();
-    exportFileName.select();
-}
-
-// Función para guardar el archivo
-function saveFile(filename, data) {
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
-
-// Función para procesar la exportación
-function processExport() {
-    const filename = exportFileName.value.trim();
-    if (!filename) {
-        alert('❌ Por favor ingresa un nombre para el archivo');
-        return;
-    }
-    
-    const exportData = {
-        version: '1.0',
-        exportDate: new Date().toISOString(),
-        data: {
-            values: values,
-            count: values.length,
-            minValue: Math.min(...values),
-            maxValue: Math.max(...values),
-            configuration: {
-                algorithm: algoName.textContent || 'No aplicable',
-                order: getSortOrder(),
-                elements: values.length
-            }
-        }
-    };
-    
-    const filenameWithExt = `${filename}.json`;
-    saveFile(filenameWithExt, JSON.stringify(exportData, null, 2));
-    exportModal.style.display = 'none';
-    
-    // Mostrar confirmación
-    algoName.textContent = `✅ Datos exportados como: ${filenameWithExt}`;
-    setTimeout(() => {
-        if (values.length > 0) {
-            updateAlgoInfo('Listo para ordenar', values.length);
-        } else {
-            algoName.textContent = 'Lista vacía - Agrega valores para ordenar';
-        }
-    }, 3000);
-}
-
-// Función para importar datos
-function importData() {
-    if (sorting) {
-        alert('⏳ Espera a que termine el ordenamiento actual');
-        return;
-    }
-    
-    importFile.click();
-}
-
-// Procesar archivo importado
-importFile.addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const importedData = JSON.parse(e.target.result);
-            
-            // Validar estructura del archivo
-            if (!importedData.data || !Array.isArray(importedData.data.values)) {
-                throw new Error('Formato de archivo inválido');
-            }
-            
-            const importedValues = importedData.data.values;
-            
-            // Validar los valores
-            if (importedValues.length > 1000) {
-                alert('❌ El archivo contiene más de 1000 elementos (máximo permitido)');
-                return;
-            }
-            
-            if (!importedValues.every(val => Number.isInteger(val))) {
-                alert('❌ El archivo contiene valores no numéricos');
-                return;
-            }
-            
-            // Aplicar los valores importados
-            values = importedValues;
-            numInput.value = values.length;
-            minInput.value = Math.min(...values);
-            maxInput.value = Math.max(...values);
-            operationsCount = 0;
-            
-            render();
-            algoName.textContent = `✅ Datos importados: ${values.length} elementos`;
-            
-            // Limpiar el input file
-            importFile.value = '';
-            
-            setTimeout(() => {
-                if (values.length > 0) {
-                    updateAlgoInfo('Listo para ordenar', values.length);
-                }
-            }, 3000);
-            
-        } catch (error) {
-            alert(`❌ Error al importar el archivo: ${error.message}`);
-            importFile.value = '';
-        }
-    };
-    
-    reader.onerror = function() {
-        alert('❌ Error al leer el archivo');
-        importFile.value = '';
-    };
-    
-    reader.readAsText(file);
-});
-
-// Event listeners para los nuevos botones
-exportBtn.onclick = () => !sorting && exportData();
-importBtn.onclick = () => !sorting && importData();
-
-// Event listeners para el modal de exportar
 closeExport.onclick = () => {
     exportModal.style.display = 'none';
 };
@@ -900,7 +876,6 @@ exportFileName.addEventListener('keypress', (e) => {
     }
 });
 
-// Cerrar modal de exportar al hacer clic fuera
 window.onclick = (event) => {
     if (event.target === helpModal) {
         helpModal.style.display = 'none';
@@ -913,3 +888,18 @@ window.onclick = (event) => {
         exportModal.style.display = 'none';
     }
 };
+
+window.addEventListener('resize', () => {
+    if (!sorting) render();
+});
+
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        const n = parseInt(numInput.value);
+        if (n > 0) {
+            randomValues(n, parseInt(minInput.value), parseInt(maxInput.value));
+        } else {
+            clearAll();
+        }
+    }, 100);
+});
