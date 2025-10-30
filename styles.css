@@ -20,6 +20,14 @@ body{background:var(--background);color:var(--text);overflow:hidden;height:100vh
 .tab-btn.critical:hover{background:linear-gradient(90deg, rgba(255,0,85,.4), rgba(127,0,255,.35));box-shadow:0 0 14px rgba(255,0,85,.45)}
 .tab-btn.johnson-mode{background:linear-gradient(90deg, rgba(255,215,0,.25), rgba(255,140,0,.25));border-color:#ffd700;color:#ffd700}
 .tab-btn.johnson-mode:hover{background:linear-gradient(90deg, rgba(255,215,0,.4), rgba(255,140,0,.35));box-shadow:0 0 14px rgba(255,215,0,.45)}
+.tab-btn.kruskal-mode{background:linear-gradient(90deg, rgba(0,200,83,.25), rgba(0,150,136,.25));border-color:#00c853;color:#00c853}
+.tab-btn.kruskal-mode:hover{background:linear-gradient(90deg, rgba(0,200,83,.4), rgba(0,150,136,.35));box-shadow:0 0 14px rgba(0,200,83,.35)}
+
+/* Estilo para aristas seleccionadas por Kruskal */
+.kruskal-selected{stroke:#ffd700 !important; stroke-width:5 !important; filter:drop-shadow(0 0 8px #ffd700) !important}
+
+/* Estilo para botones deshabilitados */
+.tab-btn.disabled, .dropdown-item.disabled{opacity:0.45;pointer-events:none}
 .right-controls{display:flex;align-items:center;gap:12px}
 .dropdown{position:relative}
 .dropdown-toggle{background:rgba(0,247,255,.18);border:1px solid var(--primary);color:var(--text);padding:8px 12px;border-radius:8px;cursor:pointer;font-size:14px;transition:all .2s ease}

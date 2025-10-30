@@ -3,6 +3,9 @@ let nodes = [], edges = [], selectedNode = null, draggingNode = null, nodeCounte
 let nodeColor = "#00f7ff", edgeColor = "#00f7ff", activeMatrix = null, lastHMap = null, lastCriticalEdges = null, lastOptimalPath = null;
 let showCriticalPath = true, showOptimalPath = true; // Controles de visualización
 let isJohnsonMode = false; // Nuevo: Estado del modo
+let isKruskalMode = false; // Nuevo: Estado del modo Kruskal (todas aristas no dirigidas)
+// Guarda IDs seleccionados por Kruskal (MST)
+let lastKruskalSelectedIds = new Set();
 
 /* ===== REFERENCIAS DOM ===== */
 const canvas = document.getElementById('canvas'), svg = canvas.querySelector('svg');
@@ -416,13 +419,14 @@ canvas.addEventListener('dblclick', e => {
     }
 });
 function addEdge(fromId, toId) {
+    // Evitar bucles en cualquier modo
+    if (fromId === toId) {
+        showModeNotification('Error: no se permiten bucles (una arista no puede apuntar al mismo nodo).');
+        return;
+    }
+
     // Aplicar restricciones si estamos en modo Johnson
     if (isJohnsonMode) {
-        // Verificar si es un bucle
-        if (fromId === toId) {
-            alert('En modo Johnson no se permiten bucles (conexiones de un nodo a sí mismo).');
-            return;
-        }
         // Verificar si ya existe una arista en la dirección opuesta
         const reverseExists = edges.some(e => e.from === toId && e.to === fromId);
         if (reverseExists) {
@@ -430,11 +434,26 @@ function addEdge(fromId, toId) {
             return;
         }
     }
+
     // Usar promptForWeight para permitir negativos en modo asignación
+    // En modo Kruskal no permitimos crear una arista si ya existe una entre los mismos nodos
+    if (isKruskalMode) {
+        const existsPair = edges.some(e => (e.from === fromId && e.to === toId) || (e.from === toId && e.to === fromId));
+        if (existsPair) {
+            showModeNotification('Error: en modo Kruskal no se permiten conexiones duplicadas o ida y vuelta entre los mismos nodos.');
+            return;
+        }
+    }
+
     const weight = promptForWeight(`Peso ${fromId}→${toId}:`, '1');
     if (weight === null) return;
-    const directed = document.getElementById('edgeType').value === 'directed';
-    edges.push({ id: Date.now(), from: fromId, to: toId, weight, directed });
+
+    // Si estamos en modo Kruskal forzamos que la arista sea no dirigida
+    const directed = isKruskalMode ? false : (edgeTypeSelect ? (edgeTypeSelect.value === 'directed') : true);
+
+    // Crear arista y dibujar
+    const edgeObj = { id: Date.now(), from: fromId, to: toId, weight, directed };
+    edges.push(edgeObj);
     updateEdges();
 }
 
@@ -559,7 +578,7 @@ function showNodeMenu(x, y, id) {
     });
     
     // Solo mostrar opción de crear bucle si NO estamos en modo Johnson
-    if (!isJohnsonMode) {
+    if (!isJohnsonMode && !isKruskalMode) {
         addItem(menu, 'Crear bucle', () => {
             addEdge(id, id);
             menu.remove();
@@ -590,26 +609,32 @@ function showEdgeMenu(x, y, id) {
     addItem(menu, 'Editar peso', () => { editEdgeWeight(id); menu.remove(); });
     
     if (edge.directed && edge.from !== edge.to) {
-        addItem(menu, 'Cambiar dirección', () => {
-            // En modo Johnson, verificar si la dirección opuesta ya existe
-            if (isJohnsonMode) {
-                const reverseExists = edges.some(e => e.id !== id && e.from === edge.to && e.to === edge.from);
-                if (reverseExists) {
-                    alert('En modo Johnson no se permite tener ambas direcciones entre los mismos nodos.');
-                    menu.remove();
-                    return;
+        // Si estamos en modo Kruskal no permitimos cambiar dirección
+        if (!isKruskalMode) {
+            addItem(menu, 'Cambiar dirección', () => {
+                // En modo Johnson, verificar si la dirección opuesta ya existe
+                if (isJohnsonMode) {
+                    const reverseExists = edges.some(e => e.id !== id && e.from === edge.to && e.to === edge.from);
+                    if (reverseExists) {
+                        alert('En modo Johnson no se permite tener ambas direcciones entre los mismos nodos.');
+                        menu.remove();
+                        return;
+                    }
                 }
-            }
-            
-            [edge.from, edge.to] = [edge.to, edge.from];
-            updateEdges();
-            menu.remove();
-        });
+                
+                [edge.from, edge.to] = [edge.to, edge.from];
+                updateEdges();
+                menu.remove();
+            });
+        }
     }
     
-    addItem(menu, edge.directed ? 'Hacer no dirigida' : 'Hacer dirigida', () => {
-        edge.directed = !edge.directed; edge.bidirectional = false; updateEdges(); menu.remove();
-    });
+    // No permitir cambiar a dirigida/no dirigida en modo Kruskal
+    if (!isKruskalMode) {
+        addItem(menu, edge.directed ? 'Hacer no dirigida' : 'Hacer dirigida', () => {
+            edge.directed = !edge.directed; edge.bidirectional = false; updateEdges(); menu.remove();
+        });
+    }
     
     addItem(menu, 'Eliminar arista', () => { edges = edges.filter(e => e.id !== id); updateEdges(); menu.remove(); });
     document.body.appendChild(menu);
@@ -652,6 +677,12 @@ function performExport(name) {
             criticalEdges: lastCriticalEdges ? Array.from(lastCriticalEdges) : [],
             optimalPath: lastOptimalPath ? Array.from(lastOptimalPath) : []
         } : null
+        ,
+        // Guardar estado Kruskal y aristas seleccionadas
+        kruskalAnalysis: {
+            isKruskalMode: isKruskalMode,
+            selectedIds: Array.from(lastKruskalSelectedIds)
+        }
     };
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -714,6 +745,23 @@ document.getElementById('loadGraph').addEventListener('click', () => {
                 lastCriticalEdges = null;
                 lastOptimalPath = null;
             }
+
+            // Restaurar análisis Kruskal si existe
+            if (data.kruskalAnalysis) {
+                isKruskalMode = !!data.kruskalAnalysis.isKruskalMode;
+                lastKruskalSelectedIds = new Set(data.kruskalAnalysis.selectedIds || []);
+                // actualizar botón Kruskal si existe
+                const kbtn = document.getElementById('toggleKruskal');
+                if (kbtn) {
+                    kbtn.textContent = isKruskalMode ? '🌲 Kruskal: On' : '🌲 Kruskal: Off';
+                    kbtn.classList.toggle('kruskal-mode', isKruskalMode);
+                }
+                // aplicar estilos y deshabilitar controles si estamos en modo Kruskal
+                if (isKruskalMode) {
+                    document.querySelectorAll('.edge-type-option').forEach(b=>{ try{ b.disabled = true; b.classList.add('disabled'); }catch(e){} });
+                    if (edgeTypeDropdown) edgeTypeDropdown.disabled = true;
+                }
+            }
             
             document.getElementById('nodeColor').value = nodeColor; 
             document.getElementById('edgeColor').value = edgeColor;
@@ -739,6 +787,11 @@ document.getElementById('loadGraph').addEventListener('click', () => {
             // Aplicar colores
             svg.querySelectorAll('path').forEach(p => p.setAttribute('stroke', edgeColor));
             svg.querySelectorAll('.arrow-marker polygon').forEach(p => p.setAttribute('fill', edgeColor));
+
+            // Si cargamos selección Kruskal, resaltarla
+            if (lastKruskalSelectedIds && lastKruskalSelectedIds.size) {
+                applyKruskalHighlight(lastKruskalSelectedIds);
+            }
             
             // Actualizar contador de nodos
             nodeCounter = Math.max(...nodes.map(n => n.id), 0) + 1;
@@ -1299,6 +1352,220 @@ document.getElementById('johnsonBtn')?.addEventListener('click', johnsonCritical
 // Activar botones de asignación máxima y mínima
 document.getElementById('assignMaxBtn')?.addEventListener('click', () => runAssignment('max'));
 document.getElementById('assignMinBtn')?.addEventListener('click', () => runAssignment('min'));
+
+// --- Kruskal mode: crear botón dinámicamente y funciones ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Crear botón en topbar si no existe
+    const tabs = document.querySelector('.tabs');
+    if (tabs && !document.getElementById('toggleKruskal')) {
+        const btn = document.createElement('button');
+        btn.id = 'toggleKruskal';
+        btn.className = 'tab-btn';
+        btn.title = 'Activar/desactivar modo Kruskal (todas las conexiones no dirigidas)';
+        btn.textContent = '🌲 Kruskal: Off';
+        tabs.appendChild(btn);
+        btn.addEventListener('click', toggleKruskalMode);
+    }
+});
+
+function toggleKruskalMode() {
+    isKruskalMode = !isKruskalMode;
+    const btn = document.getElementById('toggleKruskal');
+    if (btn) {
+        btn.textContent = isKruskalMode ? '🌲 Kruskal: On' : '🌲 Kruskal: Off';
+        btn.classList.toggle('kruskal-mode', isKruskalMode);
+    }
+
+    // Forzar tipo de arista a 'undirected' en UI
+    updateEdgeTypeUI('undirected');
+
+    // Visual: remover flechas de las aristas actuales
+    svg.querySelectorAll('path').forEach(p => {
+        if (isKruskalMode) {
+            p.removeAttribute('marker-end');
+            p.removeAttribute('marker-start');
+        } else {
+            // Si volvemos a modo normal, re-dibujar aristas para restaurar flechas según edgeType
+            // (drawEdge se encarga normalmente al actualizar)
+        }
+    });
+
+    // Convertir aristas existentes a no dirigidas y resolver conflictos bidireccionales
+    if (isKruskalMode) {
+        // Mapear pares undirected a lista de aristas
+        const pairMap = new Map();
+        edges.forEach(e => {
+            const a = Math.min(e.from, e.to), b = Math.max(e.from, e.to);
+            const key = `${a}-${b}`;
+            if (!pairMap.has(key)) pairMap.set(key, []);
+            pairMap.get(key).push(e);
+        });
+        // Para cada par con múltiples aristas (p.ej. ida y vuelta), conservar la de menor peso
+        const toRemoveIds = new Set();
+        pairMap.forEach(list => {
+            if (list.length > 1) {
+                // seleccionar la de menor peso (convertir weight a número)
+                let minEdge = list[0];
+                list.forEach(ed => {
+                    const w = typeof ed.weight === 'number' ? ed.weight : Number(ed.weight || 0);
+                    const minW = typeof minEdge.weight === 'number' ? minEdge.weight : Number(minEdge.weight || 0);
+                    if (w < minW) minEdge = ed;
+                });
+                list.forEach(ed => { if (ed.id !== minEdge.id) toRemoveIds.add(ed.id); });
+            }
+        });
+        if (toRemoveIds.size) {
+            edges = edges.filter(e => !toRemoveIds.has(e.id));
+        }
+        // Forzar no dirigida en todas las aristas
+        edges.forEach(e => { e.directed = false; e.bidirectional = false; });
+    }
+
+    // Deshabilitar/rehabilitar controles de tipo de arista según modo Kruskal
+    if (edgeTypeDropdown) edgeTypeDropdown.disabled = isKruskalMode;
+    document.querySelectorAll('.edge-type-option').forEach(btn => {
+        try { btn.disabled = isKruskalMode; if (isKruskalMode) btn.classList.add('disabled'); else btn.classList.remove('disabled'); } catch (e) {}
+    });
+
+    // Crear/actualizar botón de resolver Kruskal
+    const rightControls = document.querySelector('.right-controls');
+    if (!rightControls) return;
+    let solveBtn = document.getElementById('resolveKruskalBtn');
+    if (isKruskalMode) {
+        if (!solveBtn) {
+            solveBtn = document.createElement('button');
+            solveBtn.id = 'resolveKruskalBtn';
+            solveBtn.className = 'tab-btn kruskal-mode';
+            solveBtn.textContent = '🧩 Resolver Kruskal';
+            solveBtn.title = 'Calcular árbol de expansión mínima (Kruskal)';
+            solveBtn.addEventListener('click', resolveKruskal);
+            rightControls.appendChild(solveBtn);
+        }
+    } else {
+        // eliminar botón y limpiar resaltado
+        if (solveBtn) solveBtn.remove();
+        clearKruskalHighlight();
+    }
+    // Redibujar aristas para aplicar/revertir marcadores visuales según modo
+    updateEdges();
+}
+
+async function resolveKruskal() {
+    if (edges.length === 0) {
+        alert('No hay aristas para calcular Kruskal.');
+        return;
+    }
+
+    // Construir lista de aristas únicas (undirected) con pesos
+    const edgeList = [];
+    const seen = new Set();
+    edges.forEach(e => {
+        const a = Math.min(e.from, e.to), b = Math.max(e.from, e.to);
+        const key = `${a}-${b}`;
+        if (seen.has(key)) return; // ignorar duplicados
+        seen.add(key);
+        const weight = typeof e.weight === 'number' ? e.weight : (e.weight ? Number(e.weight) : 1);
+        edgeList.push({ id: e.id, from: a, to: b, weight, originalEdge: e });
+    });
+
+    // Ordenar por peso ascendente
+    edgeList.sort((x,y) => x.weight - y.weight);
+
+    // Union-Find
+    const parent = new Map();
+    function find(u) {
+        if (!parent.has(u)) parent.set(u, u);
+        if (parent.get(u) !== u) parent.set(u, find(parent.get(u)));
+        return parent.get(u);
+    }
+    function union(u,v) {
+        const ru = find(u), rv = find(v);
+        if (ru === rv) return false;
+        parent.set(ru, rv);
+        return true;
+    }
+
+    // Animación: iremos pintando aristas de menor a mayor peso, evitando formar ciclos
+    clearKruskalHighlight();
+    lastKruskalSelectedIds = new Set();
+    const animationDelay = 400; // ms por arista
+    for (const e of edgeList) {
+        // buscar el elemento DOM correspondiente (data-id)
+        const path = svg.querySelector(`path[data-id="${e.id}"]`);
+
+        // marcar como analizada (sutil)
+        if (path) {
+            path.style.opacity = '0.7';
+            path.style.transition = 'all 200ms ease';
+        }
+
+        // si al unir no genera ciclo, la seleccionamos y la pintamos
+        if (union(e.from, e.to)) {
+            if (path) {
+                path.setAttribute('stroke', '#ffd700');
+                path.setAttribute('stroke-width', 5);
+                path.style.filter = 'drop-shadow(0 0 8px #ffd700)';
+                path.classList.add('kruskal-selected');
+            }
+            lastKruskalSelectedIds.add(e.id);
+        } else {
+            // si genera ciclo, atenuar permanentemente
+            if (path) {
+                path.style.opacity = '0.25';
+            }
+        }
+
+        // esperar un poco antes de la siguiente arista
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise(r => setTimeout(r, animationDelay));
+    }
+
+    // No mostramos costo total según lo solicitado; el resultado visual queda en pantalla
+}
+
+function applyKruskalHighlight(mstEdges, total) {
+    // Mantener por compatibilidad: resalta todas las aristas cuyo id está en mstEdges
+    clearKruskalHighlight();
+    const selectedIds = new Set();
+    // mstEdges may be array of {from,to} or a Set of ids; accept both
+    if (mstEdges instanceof Set) {
+        mstEdges.forEach(id => selectedIds.add(Number(id)));
+    } else if (Array.isArray(mstEdges) && mstEdges.length && typeof mstEdges[0] === 'object') {
+        mstEdges.forEach(me => {
+            edges.forEach(e => {
+                const a = Math.min(e.from, e.to), b = Math.max(e.from, e.to);
+                if (a === me.from && b === me.to) selectedIds.add(e.id);
+            });
+        });
+    }
+
+    svg.querySelectorAll('path').forEach(p => {
+        const eid = p.getAttribute('data-id') || p.dataset.id || p.id;
+        if (!eid) return;
+        if (selectedIds.has(Number(eid))) {
+            p.classList.add('kruskal-selected');
+            p.setAttribute('stroke', '#ffd700');
+            p.setAttribute('stroke-width', 5);
+            p.style.filter = 'drop-shadow(0 0 8px #ffd700)';
+        } else {
+            p.style.opacity = '0.3';
+        }
+    });
+}
+
+function clearKruskalHighlight() {
+    const banner = document.getElementById('kruskalBanner'); if (banner) banner.remove();
+    svg.querySelectorAll('path').forEach(p => {
+        if (p.classList.contains('kruskal-selected')) {
+            p.classList.remove('kruskal-selected');
+            // restaurar color original
+            p.setAttribute('stroke', edgeColor);
+            p.setAttribute('stroke-width', 3);
+            p.style.filter = '';
+        }
+        p.style.opacity = '1';
+    });
+}
 
 /* ===== ALGORITMO NORTHWEST (TRANSPORTE) ===== */
 
