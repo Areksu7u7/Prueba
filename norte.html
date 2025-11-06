@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Método de Transporte Northwest</title>
+    <style>
+        :root {
+            --primary: #00f7ff;
+            --secondary: #ff00e6;
+            --background: #0a0a0f;
+            --surface: #1a1a2e;
+            --text: #e0e0ff;
+            --accent: #7f00ff;
+            --danger: #ff0055;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: var(--background);
+            color: var(--text);
+            overflow-x: hidden;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(26, 26, 46, 0.8);
+            border-radius: 15px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 20px rgba(0, 247, 255, 0.3);
+        }
+        
+        .header h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px var(--primary);
+        }
+        
+        .header p {
+            color: var(--text);
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .config-section {
+            background: rgba(26, 26, 46, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid var(--primary);
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.2);
+        }
+        
+        .config-section h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            text-shadow: 0 0 5px var(--primary);
+        }
+        
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .config-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .config-item label {
+            color: var(--text);
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .config-input, .config-select {
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--primary);
+            background: rgba(10, 10, 15, 0.7);
+            color: var(--text);
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .config-input:focus, .config-select:focus {
+            box-shadow: 0 0 0 3px rgba(0, 247, 255, 0.25);
+            border-color: var(--secondary);
+        }
+        
+        .generate-btn {
+            width: 100%;
+            padding: 15px 25px;
+            background: linear-gradient(90deg, rgba(0, 247, 255, 0.3), rgba(127, 0, 255, 0.3));
+            border: 2px solid var(--primary);
+            color: var(--text);
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .generate-btn:hover {
+            background: linear-gradient(90deg, rgba(0, 247, 255, 0.5), rgba(127, 0, 255, 0.5));
+            box-shadow: 0 0 20px rgba(0, 247, 255, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .table-container {
+            background: rgba(10, 10, 15, 0.8);
+            border: 2px solid var(--primary);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            overflow-x: auto;
+            box-shadow: 0 0 20px rgba(0, 247, 255, 0.3);
+        }
+        
+        .transport-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(26, 26, 46, 0.9);
+            border-radius: 10px;
+            overflow: hidden;
+            min-width: 600px;
+        }
+        
+        .transport-table th, .transport-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid rgba(0, 247, 255, 0.3);
+        }
+        
+        .transport-table th {
+            background: rgba(0, 247, 255, 0.2);
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .transport-table td {
+            background: rgba(10, 10, 15, 0.7);
+            color: var(--text);
+        }
+        
+        .corner-cell {
+            background: rgba(26, 26, 46, 0.5) !important;
+            border: none !important;
+        }
+        
+        .header-cell {
+            background: rgba(0, 247, 255, 0.25);
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .header-oferta {
+            background: rgba(255, 165, 0, 0.3);
+            color: #ffaa00;
+            font-weight: bold;
+        }
+        
+        .row-header {
+            background: rgba(0, 247, 255, 0.25);
+            color: var(--primary);
+            font-weight: bold;
+            text-align: left;
+            padding-left: 15px !important;
+        }
+        
+        .footer-label {
+            background: rgba(255, 165, 0, 0.3);
+            color: #ffaa00;
+            font-weight: bold;
+            text-align: left;
+            padding-left: 15px !important;
+        }
+        
+        .cell-input, .cell-oferta, .cell-demanda {
+            width: 80px;
+            padding: 10px;
+            background: rgba(10, 10, 15, 0.9);
+            border: 1px solid var(--primary);
+            color: var(--text);
+            text-align: center;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .cell-input:focus, .cell-oferta:focus, .cell-demanda:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 247, 255, 0.4);
+            background: rgba(0, 247, 255, 0.15);
+        }
+        
+        .cell-oferta, .cell-demanda {
+            background: rgba(255, 165, 0, 0.15);
+            border-color: #ffaa00;
+        }
+        
+        .table-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 20px;
+            background: rgba(26, 26, 46, 0.5);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 247, 255, 0.2);
+            margin-bottom: 25px;
+        }
+        
+        .control-btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: 2px solid;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .add-btn {
+            background: rgba(0, 255, 100, 0.15);
+            border-color: #00ff64;
+            color: #aaffaa;
+        }
+        
+        .add-btn:hover {
+            background: rgba(0, 255, 100, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 100, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .remove-btn {
+            background: rgba(255, 0, 85, 0.15);
+            border-color: var(--danger);
+            color: #ffaaaa;
+        }
+        
+        .remove-btn:hover {
+            background: rgba(255, 0, 85, 0.3);
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .reset-btn {
+            background: rgba(255, 165, 0, 0.15);
+            border-color: #ffaa00;
+            color: #ffcc66;
+        }
+        
+        .reset-btn:hover {
+            background: rgba(255, 165, 0, 0.3);
+            box-shadow: 0 0 15px rgba(255, 165, 0, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .calculate-btn {
+            background: linear-gradient(90deg, rgba(0, 247, 255, 0.25), rgba(127, 0, 255, 0.25));
+            border-color: var(--primary);
+            color: var(--text);
+            font-size: 16px;
+            padding: 15px 30px;
+        }
+        
+        .calculate-btn:hover {
+            background: linear-gradient(90deg, rgba(0, 247, 255, 0.45), rgba(127, 0, 255, 0.45));
+            box-shadow: 0 0 20px rgba(0, 247, 255, 0.5);
+            transform: translateY(-3px) scale(1.05);
+        }
+        
+        .results-section {
+            display: none;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 3px solid var(--primary);
+        }
+        
+        .results-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .results-header {
+            color: var(--primary);
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 25px;
+            text-shadow: 0 0 10px var(--primary);
+        }
+        
+        .iterations-tabs {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 15px 0;
+            margin-bottom: 25px;
+            border-bottom: 2px solid rgba(0, 247, 255, 0.3);
+        }
+        
+        .tab-btn {
+            background: rgba(0, 247, 255, 0.15);
+            border: 1px solid var(--primary);
+            color: var(--text);
+            padding: 12px 20px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        
+        .tab-btn:hover {
+            background: rgba(0, 247, 255, 0.25);
+        }
+        
+        .tab-btn.active {
+            background: rgba(0, 247, 255, 0.35);
+            border-bottom: 3px solid var(--primary);
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.4);
+        }
+        
+        .iteration-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .iteration-content.active {
+            display: block;
+        }
+        
+        .iteration-title {
+            color: var(--secondary);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 8px var(--secondary);
+        }
+        
+        .cost-display {
+            background: rgba(0, 247, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 247, 255, 0.3);
+            margin-bottom: 25px;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        
+        .cost-value {
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 2rem;
+            text-shadow: 0 0 8px var(--primary);
+        }
+        
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(26, 26, 46, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .result-table th, .result-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid rgba(0, 247, 255, 0.2);
+            font-size: 14px;
+        }
+        
+        .result-table th {
+            background: rgba(0, 247, 255, 0.2);
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .result-table td {
+            background: rgba(10, 10, 15, 0.7);
+            color: var(--text);
+        }
+        
+        .basica {
+            background: rgba(0, 247, 255, 0.25) !important;
+            color: #ffffff !important;
+            font-weight: bold;
+            box-shadow: inset 0 0 10px rgba(0, 247, 255, 0.3);
+        }
+        
+        .asignacion {
+            background: rgba(0, 255, 100, 0.3) !important;
+            color: #aaffaa !important;
+            font-weight: bold;
+        }
+        
+        .ficticio {
+            background: rgba(255, 165, 0, 0.3) !important;
+            color: #ffaa00 !important;
+            font-weight: bold;
+        }
+        
+        .explanation {
+            background: rgba(0, 247, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 247, 255, 0.2);
+            margin-top: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .explanation h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .status {
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 25px;
+        }
+        
+        .optimal {
+            background: rgba(0, 255, 100, 0.2);
+            border: 2px solid #00ff64;
+            color: #aaffaa;
+            box-shadow: 0 0 20px rgba(0, 255, 100, 0.3);
+        }
+        
+        .non-optimal {
+            background: rgba(255, 165, 0, 0.2);
+            border: 2px solid #ffaa00;
+            color: #ffcc66;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .table-controls {
+                flex-direction: column;
+            }
+            
+            .control-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .transport-table {
+                font-size: 12px;
+            }
+            
+            .cell-input, .cell-oferta, .cell-demanda {
+                width: 60px;
+                font-size: 12px;
+                padding: 8px;
+            }
+            
+            .transport-table th, .transport-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Método de Transporte - Northwest</h1>
+            <p>Resuelve problemas de transporte usando el algoritmo Northwest Corner</p>
+        </div>
+
+        <!-- Configuración inicial -->
+        <div class="config-section">
+            <h3>Configuración del Problema</h3>
+            <div class="config-grid">
+                <div class="config-item">
+                    <label for="origenes">Número de Orígenes:</label>
+                    <input type="number" id="origenes" class="config-input" min="2" max="10" value="3">
+                </div>
+                <div class="config-item">
+                    <label for="destinos">Número de Destinos:</label>
+                    <input type="number" id="destinos" class="config-input" min="2" max="10" value="3">
+                </div>
+                <div class="config-item">
+                    <label for="tipo-problema">Tipo de Problema:</label>
+                    <select id="tipo-problema" class="config-select">
+                        <option value="minimizar">Minimizar Costo</option>
+                        <option value="maximizar">Maximizar Utilidad</option>
+                    </select>
+                </div>
+            </div>
+            <button class="generate-btn" onclick="generarTabla()">Generar Tabla de Transporte</button>
+        </div>
+
+        <!-- Tabla de transporte -->
+        <div class="table-container" id="tabla-container" style="display: none;">
+            <h3>Tabla de Transporte</h3>
+            <div id="transport-table-wrapper"></div>
+            
+            <div class="table-controls">
+                <button class="control-btn add-btn" onclick="agregarFila()">
+                    <span>+</span> Agregar Fila
+                </button>
+                <button class="control-btn add-btn" onclick="agregarColumna()">
+                    <span>+</span> Agregar Columna
+                </button>
+                <button class="control-btn remove-btn" onclick="eliminarFila()">
+                    <span>-</span> Eliminar Fila
+                </button>
+                <button class="control-btn remove-btn" onclick="eliminarColumna()">
+                    <span>-</span> Eliminar Columna
+                </button>
+                <button class="control-btn reset-btn" onclick="resetearTabla()">
+                    🔄 Reiniciar
+                </button>
+                <button class="control-btn calculate-btn" onclick="resolverProblema()">
+                    🧮 Resolver con Northwest
+                </button>
+            </div>
+        </div>
+
+        <!-- Resultados -->
+        <div class="results-section" id="results-section">
+            <h2 class="results-header">Resultados del Método Northwest</h2>
+            
+            <div class="iterations-tabs" id="iterations-tabs"></div>
+            
+            <div class="iterations-content" id="iterations-content"></div>
+            
+            <div class="status" id="final-status"></div>
+        </div>
+    </div>
+
+    <script>
+        let origenes = 3;
+        let destinos = 3;
+        let iteraciones = [];
+        let tablaActual = [];
+
+        function generarTabla() {
+            origenes = parseInt(document.getElementById('origenes').value);
+            destinos = parseInt(document.getElementById('destinos').value);
+            
+            if (origenes < 2 || destinos < 2) {
+                alert('El número de orígenes y destinos debe ser al menos 2');
+                return;
+            }
+
+            let tablaHTML = `
+                <table class="transport-table">
+                    <thead>
+                        <tr>
+                            <th class="corner-cell"></th>
+            `;
+
+            // Encabezados de destinos
+            for (let j = 0; j < destinos; j++) {
+                tablaHTML += `<th class="header-cell">Destino ${j+1}</th>`;
+            }
+            tablaHTML += `<th class="header-oferta">Oferta</th></tr></thead><tbody>`;
+
+            // Filas de orígenes
+            for (let i = 0; i < origenes; i++) {
+                tablaHTML += `<tr><td class="row-header">Origen ${i+1}</td>`;
+                
+                // Celdas de costos
+                for (let j = 0; j < destinos; j++) {
+                    tablaHTML += `
+                        <td>
+                            <input type="number" class="cell-input" id="costo-${i}-${j}" 
+                                   value="${Math.floor(Math.random() * 20) + 1}" min="0">
+                        </td>
+                    `;
+                }
+                
+                // Celda de oferta
+                tablaHTML += `
+                    <td>
+                        <input type="number" class="cell-oferta" id="oferta-${i}" 
+                               value="${Math.floor(Math.random() * 100) + 50}" min="0">
+                    </td>
+                </tr>`;
+            }
+
+            // Fila de demanda
+            tablaHTML += `<tr><td class="footer-label">Demanda</td>`;
+            for (let j = 0; j < destinos; j++) {
+                tablaHTML += `
+                    <td>
+                        <input type="number" class="cell-demanda" id="demanda-${j}" 
+                               value="${Math.floor(Math.random() * 80) + 30}" min="0">
+                    </td>
+                `;
+            }
+            tablaHTML += `<td class="corner-cell"></td></tr></tbody></table>`;
+
+            document.getElementById('transport-table-wrapper').innerHTML = tablaHTML;
+            document.getElementById('tabla-container').style.display = 'block';
+            document.getElementById('results-section').classList.remove('active');
+        }
+
+        function agregarFila() {
+            origenes++;
+            generarTabla();
+        }
+
+        function agregarColumna() {
+            destinos++;
+            generarTabla();
+        }
+
+        function eliminarFila() {
+            if (origenes > 2) {
+                origenes--;
+                generarTabla();
+            } else {
+                alert('Debe haber al menos 2 orígenes');
+            }
+        }
+
+        function eliminarColumna() {
+            if (destinos > 2) {
+                destinos--;
+                generarTabla();
+            } else {
+                alert('Debe haber al menos 2 destinos');
+            }
+        }
+
+        function resetearTabla() {
+            generarTabla();
+        }
+
+        function obtenerDatosTabla() {
+            const costos = [];
+            const ofertas = [];
+            const demandas = [];
+
+            // Obtener costos
+            for (let i = 0; i < origenes; i++) {
+                costos[i] = [];
+                for (let j = 0; j < destinos; j++) {
+                    const valor = document.getElementById(`costo-${i}-${j}`).value;
+                    costos[i][j] = parseInt(valor) || 0;
+                }
+            }
+
+            // Obtener ofertas
+            for (let i = 0; i < origenes; i++) {
+                const valor = document.getElementById(`oferta-${i}`).value;
+                ofertas[i] = parseInt(valor) || 0;
+            }
+
+            // Obtener demandas
+            for (let j = 0; j < destinos; j++) {
+                const valor = document.getElementById(`demanda-${j}`).value;
+                demandas[j] = parseInt(valor) || 0;
+            }
+
+            return { costos, ofertas, demandas };
+        }
+
+        function resolverProblema() {
+            const datos = obtenerDatosTabla();
+            const { costos, ofertas, demandas } = datos;
+
+            // Verificar balance
+            const totalOferta = ofertas.reduce((a, b) => a + b, 0);
+            const totalDemanda = demandas.reduce((a, b) => a + b, 0);
+
+            if (totalOferta !== totalDemanda) {
+                alert(`El problema no está balanceado. Oferta total: ${totalOferta}, Demanda total: ${totalDemanda}`);
+                return;
+            }
+
+            iteraciones = [];
+            tablaActual = [];
+
+            // Inicializar tabla
+            for (let i = 0; i < origenes; i++) {
+                tablaActual[i] = [];
+                for (let j = 0; j < destinos; j++) {
+                    tablaActual[i][j] = { asignacion: 0, basica: false };
+                }
+            }
+
+            // Aplicar método Northwest
+            aplicarNorthwest(costos, ofertas.slice(), demandas.slice());
+
+            mostrarResultados();
+        }
+
+        function aplicarNorthwest(costos, ofertas, demandas) {
+            let i = 0, j = 0;
+            let iteracion = 1;
+
+            while (i < origenes && j < destinos) {
+                // Guardar estado actual
+                guardarIteracion(iteracion, i, j, ofertas.slice(), demandas.slice(), costos);
+
+                const asignacion = Math.min(ofertas[i], demandas[j]);
+                
+                if (asignacion > 0) {
+                    tablaActual[i][j].asignacion = asignacion;
+                    tablaActual[i][j].basica = true;
+
+                    ofertas[i] -= asignacion;
+                    demandas[j] -= asignacion;
+
+                    if (ofertas[i] === 0) i++;
+                    if (demandas[j] === 0) j++;
+                }
+
+                iteracion++;
+            }
+
+            // Guardar iteración final
+            guardarIteracion(iteracion, i, j, ofertas.slice(), demandas.slice(), costos, true);
+        }
+
+        function guardarIteracion(numero, filaActual, colActual, ofertas, demandas, costos, esFinal = false) {
+            const tablaIteracion = [];
+            let costoTotal = 0;
+
+            for (let i = 0; i < origenes; i++) {
+                tablaIteracion[i] = [];
+                for (let j = 0; j < destinos; j++) {
+                    const celda = {
+                        costo: costos[i][j],
+                        asignacion: tablaActual[i][j].asignacion,
+                        basica: tablaActual[i][j].basica
+                    };
+                    tablaIteracion[i][j] = celda;
+
+                    if (celda.basica) {
+                        costoTotal += celda.costo * celda.asignacion;
+                    }
+                }
+            }
+
+            iteraciones.push({
+                numero,
+                tabla: JSON.parse(JSON.stringify(tablaIteracion)),
+                ofertas: ofertas.slice(),
+                demandas: demandas.slice(),
+                filaActual,
+                colActual,
+                costoTotal,
+                esFinal
+            });
+        }
+
+        function mostrarResultados() {
+            const tabsContainer = document.getElementById('iterations-tabs');
+            const contentContainer = document.getElementById('iterations-content');
+            
+            tabsContainer.innerHTML = '';
+            contentContainer.innerHTML = '';
+
+            // Crear pestañas
+            iteraciones.forEach((iter, index) => {
+                const tabBtn = document.createElement('button');
+                tabBtn.className = 'tab-btn' + (index === 0 ? ' active' : '');
+                tabBtn.textContent = `Iteración ${iter.numero}`;
+                tabBtn.onclick = () => mostrarIteracion(index);
+                tabsContainer.appendChild(tabBtn);
+            });
+
+            // Mostrar primera iteración
+            mostrarIteracion(0);
+            
+            // Mostrar estado final
+            const finalIter = iteraciones[iteraciones.length - 1];
+            const statusDiv = document.getElementById('final-status');
+            statusDiv.className = 'status optimal';
+            statusDiv.innerHTML = `
+                <h3>Solución Óptima Encontrada</h3>
+                <p>Costo Total Mínimo: <span class="cost-value">${finalIter.costoTotal}</span></p>
+                <p>El problema ha sido resuelto satisfactoriamente usando el método Northwest</p>
+            `;
+
+            document.getElementById('results-section').classList.add('active');
+        }
+
+        function mostrarIteracion(index) {
+            const iter = iteraciones[index];
+            const contentContainer = document.getElementById('iterations-content');
+            
+            // Actualizar pestañas activas
+            document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i === index);
+            });
+
+            let contenidoHTML = `
+                <div class="iteration-content active">
+                    <h3 class="iteration-title">Iteración ${iter.numero}</h3>
+                    
+                    <div class="cost-display">
+                        Costo Total Acumulado: <span class="cost-value">${iter.costoTotal}</span>
+                    </div>
+            `;
+
+            // Tabla de la iteración
+            contenidoHTML += `
+                <div class="table-container">
+                    <table class="result-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+            `;
+
+            // Encabezados de destinos
+            for (let j = 0; j < destinos; j++) {
+                contenidoHTML += `<th>Destino ${j+1}</th>`;
+            }
+            contenidoHTML += `<th>Oferta</th><th>Oferta Restante</th></tr></thead><tbody>`;
+
+            // Filas de orígenes
+            for (let i = 0; i < origenes; i++) {
+                contenidoHTML += `
+                    <tr>
+                        <td class="row-header">Origen ${i+1}</td>
+                `;
+
+                // Celdas de la tabla
+                for (let j = 0; j < destinos; j++) {
+                    const celda = iter.tabla[i][j];
+                    let claseCelda = '';
+                    
+                    if (celda.basica && celda.asignacion > 0) {
+                        claseCelda = 'basica';
+                    }
+
+                    contenidoHTML += `
+                        <td class="${claseCelda}">
+                            ${celda.costo}<br>
+                            <strong>${celda.asignacion > 0 ? `[${celda.asignacion}]` : ''}</strong>
+                        </td>
+                    `;
+                }
+
+                contenidoHTML += `
+                    <td>${iter.ofertas[i] + iter.tabla[i].reduce((sum, celda) => sum + celda.asignacion, 0)}</td>
+                    <td>${iter.ofertas[i]}</td>
+                    </tr>
+                `;
+            }
+
+            // Fila de demanda
+            contenidoHTML += `<tr><td class="footer-label">Demanda</td>`;
+            for (let j = 0; j < destinos; j++) {
+                contenidoHTML += `<td>${iter.demandas[j] + iter.tabla.reduce((sum, fila) => sum + fila[j].asignacion, 0)}</td>`;
+            }
+            contenidoHTML += `<td colspan="2"></td></tr>`;
+
+            contenidoHTML += `<tr><td class="footer-label">Demanda Restante</td>`;
+            for (let j = 0; j < destinos; j++) {
+                contenidoHTML += `<td>${iter.demandas[j]}</td>`;
+            }
+            contenidoHTML += `<td colspan="2"></td></tr></tbody></table></div>`;
+
+            // Explicación
+            if (!iter.esFinal) {
+                contenidoHTML += `
+                    <div class="explanation">
+                        <h4>Explicación de la Iteración</h4>
+                        <p>En esta iteración, se asignó desde el Origen ${iter.filaActual + 1} 
+                        al Destino ${iter.colActual + 1} usando la esquina Noroeste (Northwest).</p>
+                        <p>Se asignaron ${Math.min(iter.ofertas[iter.filaActual] + iter.tabla[iter.filaActual][iter.colActual].asignacion, 
+                        iter.demandas[iter.colActual] + iter.tabla[iter.filaActual][iter.colActual].asignacion)} unidades.</p>
+                    </div>
+                `;
+            } else {
+                contenidoHTML += `
+                    <div class="explanation">
+                        <h4>Solución Final</h4>
+                        <p>Se ha completado la asignación usando el método Northwest Corner.</p>
+                        <p>Todas las ofertas y demandas han sido satisfechas.</p>
+                    </div>
+                `;
+            }
+
+            contenidoHTML += `</div>`;
+            contentContainer.innerHTML = contenidoHTML;
+        }
+
+        // Generar tabla inicial al cargar la página
+        window.onload = generarTabla;
+    </script>
+</body>
+</html>
